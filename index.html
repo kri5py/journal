@@ -173,7 +173,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
         <button class="primary" id="chatsend">send</button>
         <button class="ghost" id="shotbtn" hidden>📎 screenshots</button>
         <input type="file" id="shotin" accept="image/*" multiple hidden>
-        <button class="ghost" id="chatsave" title="Ctrl+Shift+Enter">finish &amp; tidy</button>
+        <button class="ghost" id="chatsave" title="Ctrl+K">finish &amp; tidy</button>
         <button class="ghost tiny" id="chatclear">new chat</button>
       </div>
       <p class="hint" id="shothint" hidden>screenshots are read once and never saved. only the text is kept.</p>
@@ -1667,7 +1667,7 @@ $('#time').value = nowTime();
 $('#save').addEventListener('click', saveEntry);
 tapConfirm($('#rescore'),'tap again to re-score everything',()=>rescoreAll());
 $('#ranges').addEventListener('click',ev=>{ const b = ev.target.closest('[data-r]'); if(!b) return; range = b.dataset.r; try{ localStorage.setItem('journal-range', range); }catch(e){} render(); });
-document.addEventListener('keydown',ev=>{ if(ev.key==='Enter' && ev.ctrlKey && ev.shiftKey){ const btn = $('#chatsave'); if(btn && btn.offsetParent!==null && !btn.disabled){ ev.preventDefault(); saveChat(); } } });
+document.addEventListener('keydown',ev=>{ if((ev.ctrlKey||ev.metaKey) && !ev.altKey && (String(ev.key).toLowerCase()==='k' || (ev.key==='Enter' && ev.shiftKey))){ const btn = $('#chatsave'); if(btn && btn.offsetParent!==null && !btn.disabled){ ev.preventDefault(); saveChat(); } } });
 $('#mode-chat').addEventListener('click',()=>setMode('chat'));
 $('#mode-entry').addEventListener('click',()=>setMode('entry'));
 applyView();
