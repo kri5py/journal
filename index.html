@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>my little journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2a1420; --card:#3a1c2c; --blush:#52263c; --pink:#ff8fb8; --hot:#ff6fa9; --berry:#ffb3d1;
+  --ink:#ffe6f0; --soft:#d9a4bd; --line:#6b3550; --chip:#4a2236; --shadow:rgba(0,0,0,.35);
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#2a1420; --card:#3a1c2c; --blush:#52263c; --pink:#ff8fb8; --hot:#ff6fa9; --berry:#ffb3d1;
+    --ink:#ffe6f0; --soft:#d9a4bd; --line:#6b3550; --chip:#4a2236; --shadow:rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#2a1420; --card:#3a1c2c; --blush:#52263c; --pink:#ff8fb8; --hot:#ff6fa9; --berry:#ffb3d1;
+  --ink:#ffe6f0; --soft:#d9a4bd; --line:#6b3550; --chip:#4a2236; --shadow:rgba(0,0,0,.35);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Quicksand',system-ui,sans-serif;font-weight:600;line-height:1.5;min-height:100%}
+.wrap{max-width:640px;margin:0 auto;padding:22px 16px 60px}
+h1,h2,h3{font-family:'Fredoka',system-ui,sans-serif;font-weight:500;margin:0}
+h1{font-size:1.7rem;color:var(--berry);letter-spacing:.2px}
+h1 small{display:block;font-family:'Quicksand';font-size:.95rem;color:var(--soft);font-weight:600;margin-top:2px}
+h2{font-size:1rem;color:var(--berry);margin-bottom:8px}
+.card{background:var(--card);border-radius:22px;padding:14px;margin-top:14px;box-shadow:0 8px 24px var(--shadow)}
+.tabs{display:flex;gap:6px;background:var(--chip);border-radius:999px;padding:3px;margin-bottom:10px}
+.tab{flex:1;background:transparent;color:var(--berry);padding:6px 10px;font-size:.88rem;box-shadow:none}
+.tab[aria-selected="true"]{background:var(--hot);color:#fff;box-shadow:none}
+.chatlog{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 2px 10px}
+.bub{max-width:86%;padding:10px 14px;border-radius:20px;white-space:pre-wrap;word-wrap:break-word}
+.bub.me{align-self:flex-end;background:var(--hot);color:#fff;border-bottom-right-radius:6px}
+.bub.ai{align-self:flex-start;background:var(--chip);color:var(--ink);border-bottom-left-radius:6px}
+.settings{margin-top:34px;font-size:.8rem;color:var(--soft);opacity:.85}
+.settings summary{cursor:pointer;text-align:center;list-style:none}
+.settings summary::-webkit-details-marker{display:none}
+.settings[open]{background:var(--card);border-radius:18px;padding:12px 14px;opacity:1}
+.memlist{list-style:none;padding:0;margin:8px 0}
+.memlist li{display:flex;gap:8px;align-items:flex-start;padding:6px 10px;margin:4px 0;background:var(--bg);border-radius:12px}
+.memlist li span{flex:1}
+.memlist button{padding:0 8px;background:transparent;color:var(--berry);font-size:1.1rem;line-height:1.3}
+select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:6px 8px;max-width:100%}
+.bub.dim{opacity:.7}
+.bwrap{display:flex;flex-direction:column;gap:3px;max-width:86%}
+.bwrap.me{align-self:flex-end;align-items:flex-end}
+.bwrap.ai{align-self:flex-start;align-items:flex-start}
+.bwrap .bub{max-width:100%;align-self:auto}
+.modes{display:flex;gap:5px;margin:-2px 0 8px}
+.mode{flex:1;background:var(--chip);color:var(--berry);padding:5px 8px;font-size:.78rem;box-shadow:none}
+.mode[aria-pressed="true"]{background:var(--blush);box-shadow:inset 0 0 0 2px var(--hot)}
+.pbar{height:10px;background:var(--chip);border-radius:999px;overflow:hidden;margin:8px 0}
+.pfill{height:100%;width:0;background:var(--hot);border-radius:999px;transition:width .3s}
+@media (prefers-reduced-motion:reduce){.pfill{transition:none}}
+details.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+details.sec>summary::-webkit-details-marker{display:none}
+.evt{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border-radius:16px;padding:10px 12px;margin-top:8px}
+.evt .when{flex:none;min-width:56px;text-align:center;background:var(--blush);color:var(--berry);border-radius:12px;padding:4px 6px;font-size:.78rem}
+.evt .body{flex:1;min-width:0}
+.evt b{font-family:'Fredoka',system-ui,sans-serif;font-weight:500;color:var(--ink)}
+.sub{font-family:'Fredoka',system-ui,sans-serif;font-weight:500;color:var(--berry);font-size:1.05rem;margin:18px 0 6px}
+details.prof{background:var(--bg);border-radius:18px;margin-top:8px;overflow:hidden}
+details.prof>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 12px}
+details.prof>summary::-webkit-details-marker{display:none}
+details.prof[open]>summary .chev{transform:rotate(90deg)}
+.avatar{flex:none;width:40px;height:40px;border-radius:50%;background:var(--blush);color:var(--berry);display:grid;place-items:center;font-family:'Fredoka';font-size:1.15rem}
+.profbody{padding:0 14px 12px}
+.profbody p{margin:6px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.tl{margin:6px 0;padding-left:18px}
+.tl li{margin:3px 0}
+.tl li::marker{color:var(--hot)}
+.tl b{color:var(--berry);font-weight:700}
+[hidden]{display:none !important}
+.stitch{border:2px dashed var(--line);border-radius:26px;padding:16px}
+textarea,input[type=date],input[type=time]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:18px;padding:12px 14px;outline:none}
+textarea{min-height:130px;resize:vertical}
+textarea:focus,input:focus{border-color:var(--hot)}
+.row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+input[type=date],input[type=time]{width:auto;padding:9px 12px}
+button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:999px;padding:8px 16px;font-size:.9rem;transition:transform .12s}
+button:active{transform:scale(.96)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.primary{background:var(--hot);color:#fff;box-shadow:0 4px 0 var(--berry)}
+.primary:disabled{opacity:.6;cursor:wait}
+.ghost{background:var(--chip);color:var(--berry)}
+.tiny{padding:6px 12px;font-size:.8rem}
+.hint{color:var(--soft);font-size:.82rem;margin:8px 2px 0}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.stat{background:var(--chip);border-radius:18px;padding:10px;text-align:center}
+.stat b{display:block;font-family:'Fredoka';font-size:1.4rem;color:var(--berry);font-weight:500}
+.stat span{font-size:.78rem;color:var(--soft)}
+.chart{width:100%;height:auto;display:block}
+.analysis{margin-top:12px;background:var(--chip);border-radius:18px;padding:14px}
+.analysis h3{font-size:1.05rem;color:var(--berry);margin-bottom:6px}
+.analysis ul{margin:6px 0 0;padding-left:20px}
+.analysis li{margin:4px 0}
+details.day{background:var(--card);border-radius:22px;margin-top:12px;box-shadow:0 6px 18px var(--shadow);overflow:hidden}
+details.day>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px}
+details.day>summary::-webkit-details-marker{display:none}
+.emo{font-size:1.7rem;line-height:1;background:var(--blush);border-radius:50%;width:46px;height:46px;display:grid;place-items:center;flex:none}
+.dtitle{flex:1;min-width:0}
+.dtitle b{display:block;font-family:'Fredoka';font-weight:500;font-size:1.05rem;color:var(--berry)}
+.dtitle span{font-size:.82rem;color:var(--soft);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{color:var(--hot);transition:transform .2s;font-size:1.1rem}
+details[open]>summary .chev{transform:rotate(90deg)}
+.daybody{padding:0 16px 14px}
+.entry{border-top:2px dotted var(--line);padding:12px 0}
+.entry:first-child{border-top:0}
+.etop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.etop strong{font-family:'Fredoka';font-weight:500;color:var(--ink)}
+.chip{background:var(--chip);color:var(--berry);border-radius:999px;padding:2px 10px;font-size:.78rem}
+.entry ul{margin:6px 0;padding-left:20px}
+.entry li::marker{color:var(--hot)}
+.entry li{margin:3px 0}
+.raw{margin-top:8px;font-size:.85rem;color:var(--soft)}
+.raw summary{cursor:pointer;color:var(--berry)}
+.raw p{margin:6px 0 0;white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:10px}
+.acts{display:flex;gap:8px;margin-top:8px}
+.editbox{display:grid;gap:8px;margin:8px 0}
+.editbox input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:9px 12px;outline:none}
+.editbox input[type=text]:focus{border-color:var(--hot)}
+.editbox textarea{min-height:140px}
+.empty{text-align:center;color:var(--soft);padding:26px 10px}
+.bounce{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.bounce{animation:none}.chev{transition:none}}
+#chatreadwrap:not([hidden]){display:flex;gap:6px;align-items:center;margin:8px 2px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="winbar" hidden style="margin-top:0;margin-bottom:10px;padding:10px 14px"><b id="win1" style="font-family:'Fredoka',system-ui,sans-serif;font-weight:500;color:var(--berry)"></b><div class="hint" id="win2" style="margin:2px 0 0"></div></div>
+  <div class="card" id="cyclebar" hidden style="margin-top:0;padding:10px 14px"><b id="cyc1" style="font-family:'Fredoka',system-ui,sans-serif;font-weight:500;color:var(--berry)"></b><div class="hint" id="cyc2" style="margin:2px 0 0"></div></div>
+
+  <div class="card">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-chat" aria-selected="true" aria-controls="panel-chat">📓 journal</button>
+      <button class="tab" role="tab" id="tab-world" aria-selected="false" aria-controls="panel-world">🧩 world</button>
+    </div>
+    <div class="modes" id="modes" role="group" aria-label="Chat or write an entry">
+      <button class="mode" id="mode-chat" aria-pressed="true">💬 chat</button>
+      <button class="mode" id="mode-entry" aria-pressed="false">📝 write an entry</button>
+    </div>
+    <div class="stitch" id="panel-journal" role="tabpanel" aria-label="Write an entry" hidden>
+      <h2>spill the tea</h2>
+      <textarea id="raw" placeholder="paste or dictate your day here, messy is fine… (tip: use the mic on your keyboard)"></textarea>
+      <div class="row">
+        <input type="date" id="date" aria-label="Entry date">
+        <input type="time" id="time" aria-label="Entry time">
+        <button class="primary" id="save">tidy up &amp; save</button>
+      </div>
+      <p class="hint" id="status">your raw words get cleaned into bullets, the original stays tucked inside each entry.</p>
+    </div>
+    <div class="stitch" id="panel-chat" role="tabpanel" aria-labelledby="tab-chat">
+      <h2>chat it out</h2>
+      <div class="chatlog" id="chatlog" aria-live="polite"></div>
+      <textarea id="chatin" style="min-height:70px" placeholder="tell me about your day…"></textarea>
+      <div class="row">
+        <input type="date" id="chatdate" aria-label="Chat date">
+        <input type="time" id="chattime" aria-label="Chat time">
+      </div>
+      <label class="hint" id="chatreadwrap" hidden><input type="checkbox" id="chatread"> 🔊 read replies aloud</label>
+      <div class="row">
+        <button class="primary" id="chatsend">send</button>
+        <button class="ghost" id="shotbtn" hidden>📎 screenshots</button>
+        <input type="file" id="shotin" accept="image/*" multiple hidden>
+        <button class="ghost" id="chatsave">finish &amp; tidy</button>
+        <button class="ghost tiny" id="chatclear">new chat</button>
+      </div>
+      <p class="hint" id="shothint" hidden>screenshots are read once and never saved. only the text is kept.</p>
+      <p class="hint" id="chatstatus">small talk isn't saved. a chat only goes in your log once there's enough to read a mood from, and finish &amp; tidy saves it right away if so.</p>
+    </div>
+    <div class="stitch" id="panel-world" role="tabpanel" aria-labelledby="tab-world" hidden>
+      <h2>your world</h2>
+      <p class="hint" style="margin:0 0 8px">built from your journal and chats. it keeps itself up to date, including your older entries.</p>
+      <p class="hint" id="worldstatus" style="margin:0" aria-live="polite"></p>
+      <div class="pbar" id="pbar" role="progressbar" aria-label="Scan progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div class="pfill" id="pfill"></div></div>
+      <details class="sec" data-sec="good"><summary class="sub"><span id="sc-good">good things</span><span class="chev" aria-hidden="true">›</span></summary><div id="goodlist"></div></details>
+      <details class="sec" data-sec="goals" open><summary class="sub"><span id="sc-goals">goals</span><span class="chev" aria-hidden="true">›</span></summary><div class="row" style="margin:0 0 2px"><button class="ghost tiny" id="rescan-goal">↻ rescan goals</button></div><div id="goals"></div></details>
+      <details class="sec" data-sec="people" open><summary class="sub"><span id="sc-people">people</span><span class="chev" aria-hidden="true">›</span></summary><div class="row" style="margin:0 0 2px"><button class="ghost tiny" id="rescan-person">↻ rescan people</button></div><div id="people"></div></details>
+      <details class="sec" data-sec="topics" open><summary class="sub"><span id="sc-topics">trending topics</span><span class="chev" aria-hidden="true">›</span></summary><div class="row" style="margin:0 0 2px"><button class="ghost tiny" id="rescan-topic">↻ rescan topics</button></div><div id="topics"></div></details>
+      <details class="sec" data-sec="events" open><summary class="sub"><span id="sc-events">events</span><span class="chev" aria-hidden="true">›</span></summary><div class="row" style="margin:0 0 2px"><button class="ghost tiny" id="rescan-event">↻ rescan events</button></div><div id="events"></div></details>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>my mood lately</h2>
+    <div class="modes" id="ranges" role="group" aria-label="Mood range" style="margin:0 0 10px">
+      <button class="mode" data-r="7" aria-pressed="true">week</button>
+      <button class="mode" data-r="30" aria-pressed="false">month</button>
+      <button class="mode" data-r="90" aria-pressed="false">3 months</button>
+      <button class="mode" data-r="all" aria-pressed="false">all</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <p class="hint" id="trend" style="margin:0 0 8px"></p>
+    <div id="chart"></div>
+    <div class="row"><button class="ghost" id="analyze">analyze my days ✨</button></div>
+    <div class="row"><button class="ghost tiny" id="rescore">↻ re-score all entries</button><span class="hint" id="rescorestatus" style="margin:0"></span></div>
+    <div id="analysis"></div>
+  </div>
+
+  <h2 style="margin-top:26px">the log</h2>
+  <div class="row" id="ttsrow" hidden style="margin:0 0 4px">
+    <label class="hint" style="margin:0">🔊 voice <select id="voice" aria-label="Voice"></select></label>
+    <label class="hint" style="margin:0"><input type="checkbox" id="gossip" checked> 💋 gossip narrator</label>
+    <label class="hint" style="margin:0">speed <select id="rate" aria-label="Speech speed"><option value="0.85">slow</option><option value="1" selected>normal</option><option value="1.2">fast</option><option value="1.4">faster</option></select></label>
+  </div>
+  <p class="hint" id="voicehint" style="margin:0 0 8px"></p>
+  <div id="log"></div>
+
+  <details class="settings" id="memdet">
+    <summary id="memsum">⚙ buddy memory</summary>
+    <p class="hint">things your chat buddy has picked up about you. deleting one makes it forget that.</p>
+    <ul class="memlist" id="memlist"></ul>
+    <button class="ghost tiny" id="memclear">forget everything</button>
+  </details>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const MOODS = {1:'😭',2:'😕',3:'😐',4:'😊',5:'🥰'};
+let entries = [];
+let store = null;
+const openDays = new Set();
+const editing = new Set();
+let memoryItems = [];
+const adding = new Set();
+function nowTime(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function toTs(date,time){
+  const [y,m,d]=date.split('-').map(Number); const [h,mi]=(time||'00:00').split(':').map(Number);
+  return new Date(y,m-1,d,h||0,mi||0).getTime();
+}
+function tsTime(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+let firstRender = true;
+let analysisHTML = null;
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function el(tag, props, ...kids){
+  const n = document.createElement(tag);
+  if(props) for(const k in props){
+    if(k==='class') n.className = props[k];
+    else if(k==='text') n.textContent = props[k];
+    else if(k.startsWith('on')) n.addEventListener(k.slice(2), props[k]);
+    else n.setAttribute(k, props[k]);
+  }
+  kids.flat().forEach(c => { if(c!=null) n.append(c.nodeType ? c : document.createTextNode(c)); });
+  return n;
+}
+function prettyDate(s){
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
+}
+function timeStr(ts){ return new Date(ts).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }
+
+/* ---------- storage: private db if available, else browser storage ---------- */
+async function initStore(){
+  try{
+    const db = await claude.use('db');
+    const user = await claude.use('user');
+    if(db && user){
+      const uid = await user.id();
+      if(uid){
+        const col = db.collection('data/users/'+uid);
+        store = {
+          save: e => col.doc(e.id).set(e),
+          remove: id => col.doc(id).delete(),
+          saveMemory: items => col.doc('memory').set({id:'memory', items}),
+          saveProfile: p => col.doc(p.id).set(p),
+          removeProfile: id => col.doc(id).delete(),
+          saveMeta: m => col.doc('profilemeta3').set({id:'profilemeta3', done:m.done, ev:m.ev||{}, gl:m.gl?1:0, gs:m.gs||{}, cy:m.cy||{}})
+        };
+        col.onSnapshot(snap => {
+          const all = snap.docs.map(d => d.data());
+          entries = all.filter(d => d && typeof d.id==='string' && d.id.startsWith('entry-'));
+          const m = all.find(d => d && d.id==='memory');
+          memoryItems = m && Array.isArray(m.items) ? m.items : [];
+          profiles = mergeProfiles(all.filter(d => d && (d.kind==='person' || d.kind==='topic' || d.kind==='event' || d.kind==='goal' || d.kind==='cycle') && typeof d.id==='string'));
+          backupProfiles();
+          const pm = all.find(d => d && d.id==='profilemeta3');
+          profMeta = normMeta(pm && pm.done, pm && pm.ev, pm && pm.gl, pm && pm.gs, pm && pm.cy);
+          render(); renderMem(); scheduleCatchUp(); if(dirtyIds.size) flushDirty();
+        }, () => { localMode(); });
+        return;
+      }
+    }
+  }catch(e){}
+  localMode();
+}
+function localMode(){
+  let saved = [];
+  try{ saved = JSON.parse(localStorage.getItem('journal-entries')||'[]'); }catch(e){}
+  entries = saved;
+  try{ memoryItems = JSON.parse(localStorage.getItem('journal-memory')||'[]'); }catch(e){}
+  try{ profiles = JSON.parse(localStorage.getItem('journal-profiles')||'[]'); { const mo = JSON.parse(localStorage.getItem('journal-profmeta3')||'{}')||{}; profMeta = normMeta(mo.done, mo.ev, mo.gl, mo.gs, mo.cy); } }catch(e){}
+  renderMem();
+  scheduleCatchUp();
+  const persist = () => { try{ localStorage.setItem('journal-entries', JSON.stringify(entries)); }catch(e){} };
+  store = {
+    save: async e => { const i = entries.findIndex(x=>x.id===e.id); if(i>=0) entries[i]=e; else entries.push(e); persist(); render(); },
+    remove: async id => { entries = entries.filter(x=>x.id!==id); persist(); render(); },
+    saveMemory: async items => { memoryItems = items; try{ localStorage.setItem('journal-memory', JSON.stringify(items)); }catch(e){} },
+    saveProfile: async p => { try{ localStorage.setItem('journal-profiles', JSON.stringify(profiles)); }catch(e){} },
+    removeProfile: async id => { profiles = profiles.filter(x=>x.id!==id); try{ localStorage.setItem('journal-profiles', JSON.stringify(profiles)); }catch(e){} },
+    saveMeta: async m => { try{ localStorage.setItem('journal-profmeta3', JSON.stringify(m)); }catch(e){} }
+  };
+  render();
+}
+
+/* ---------- AI tidy-up ---------- */
+async function getSample(){
+  try{ return await claude.use('sample'); }catch(e){ return null; }
+}
+function fallbackTidy(raw){
+  const parts = raw.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(Boolean).slice(0,8);
+  return { title:'untitled day', emoji:'📝', mood:'unsorted', score:3, bullets:parts.length?parts:[raw.trim()], themes:[], wins:[], tidy:false };
+}
+async function tidy(raw, chatMode=false, fb=raw){
+  const sample = await getSample();
+  if(!sample) return fallbackTidy(fb);
+  const prompt =
+`You clean up voice-transcribed journal entries. The text may contain mishears, homophones, filler words, repeated phrases, missing punctuation and rambling.
+Rewrite it into a clear log WITHOUT inventing facts, people, or feelings that are not implied. Keep the writer's voice (first person, casual).
+${chatMode?'This input is a chat between the writer ("Me") and a journaling buddy. Write the bullets so roughly 60% come from what the writer said, felt or did (first person) and roughly 40% come from the buddy replies: the useful takes, reframes, observations or funny lines the buddy offered. Start each buddy bullet with "💬 " and phrase it as the buddy view (for example "💬 Buddy thinks ...") so it is never mistaken for a fact about the writer; this overrides the first-person rule for those bullets. Skip buddy filler. For example, 5 bullets means 3 from the writer and 2 from the buddy. If text from a screenshot names the other person, use that real name in the bullets instead of phrases like "the guy from the screenshots". Memories, mood and score come from the writer only. Also add a boolean field "readable": true only if the writer shared enough real content (what happened, or how they feel) to infer a mood; false for greetings, small talk, gibberish or one-word replies. Also add "memories": an array of up to 4 short durable facts about the writer worth remembering for future chats (people in their life, ongoing situations, routines, preferences), not passing moods or one-off events and not very sensitive details; use [] if none. Already remembered, do not repeat: '+JSON.stringify(memoryItems.map(m=>m.t))+'\n':''}Return ONLY JSON in this exact shape:
+{"title": "3-6 word cute title for the entry", "emoji": "one emoji", "mood": "one or two word mood", "score": integer 1-5 (1 = awful, 2 = low or stressed, 3 = truly flat or evenly mixed, 4 = good, 5 = great; judge only by how the writer sounds about her own day. Use the full range: a day with wins, laughter, excitement, pride, relief or feeling loved is 4 or 5; a rough, anxious, sad or angry day is 1 or 2. 3 is rare, only when there is genuinely no lean either way. Never pick 3 just to be safe. Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.), "bullets": ["3-7 short first-person bullets, each one clear event, thought or feeling"], "wins": ["up to 3 short first-person positive moments from the WRITER: something good that happened, something she did well or is proud of, or something she is looking forward to; empty list if there is none; never invent, never from the buddy"], "themes": ["up to 3 one-word themes"]}
+
+Entry:
+"""${raw}"""`;
+  try{
+    const r = await sample.json(prompt, {modelTier:'complex'});
+    if(chatMode && r && r.readable===false) return {tidy:true, readable:false};
+    if(!r || !Array.isArray(r.bullets) || !r.bullets.length) return fallbackTidy(fb);
+    return {
+      title:String(r.title||'my day').slice(0,60),
+      emoji:String(r.emoji||'💗').slice(0,4),
+      mood:String(r.mood||'').slice(0,30),
+      score:Math.min(5,Math.max(1,Math.round(Number(r.score)||3))),
+      bullets:r.bullets.map(b=>String(b).slice(0,300)).slice(0,10),
+      themes:Array.isArray(r.themes)?r.themes.map(t=>String(t).slice(0,20)).slice(0,3):[],
+      wins:Array.isArray(r.wins)?r.wins.map(w=>String(w).trim().slice(0,140)).filter(Boolean).slice(0,3):[],
+      tidy:true, readable:true,
+      memories: chatMode && Array.isArray(r.memories) ? r.memories.map(x=>String(x).slice(0,140)).slice(0,4) : []
+    };
+  }catch(e){ return fallbackTidy(fb); }
+}
+
+async function saveEntry(){
+  const raw = $('#raw').value.trim();
+  if(!raw){ $('#status').textContent = 'nothing to save yet.'; return; }
+  const btn = $('#save'); btn.disabled = true; btn.textContent = 'making sense of it…';
+  $('#status').textContent = 'decoding your transcription…';
+  const t = await tidy(raw);
+  const date = $('#date').value||todayStr();
+  const e = { id:'entry-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), date, ts:toTs(date,$('#time').value||nowTime()), raw, ...t };
+  try{
+    await store.save(e);
+    $('#raw').value = '';
+    $('#time').value = nowTime();
+    openDays.add(e.date);
+    updateProfiles(e);
+    $('#status').textContent = t.tidy ? 'saved ♡ added to your log below.' : "saved, but couldn't auto-tidy it. hit 'retry tidy-up' on the entry.";
+  }catch(err){
+    $('#status').textContent = "couldn't save that, try again.";
+  }
+  btn.disabled = false; btn.textContent = 'tidy up & save';
+}
+
+async function retry(e, btn){
+  btn.disabled = true; btn.textContent = 'tidying…';
+  const isChat = e.source==='chat';
+  const t = isChat ? await tidy(e.raw, true, userTextOf(e.raw)) : await tidy(e.raw);
+  if(t.tidy) await store.save({...e, ...t});
+  else { btn.disabled = false; btn.textContent = 'retry tidy-up'; }
+}
+async function addTranscription(e, raw, btn){
+  raw = raw.trim(); if(!raw) return;
+  btn.disabled = true; btn.textContent = 'tidying…';
+  const stamp = new Date().toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+  const mergedRaw = e.raw + '\n\n[added ' + stamp + ']\n' + raw;
+  let merged = null;
+  const sample = await getSample();
+  if(sample){
+    const prompt =
+`You maintain a journal entry made of bullet points. The writer just added another voice-transcribed note (may contain mishears and filler).
+The new note can do two things: add new content, and/or CORRECT earlier bullets (e.g. "that bullet was wrong", "actually it was Tuesday", "ignore what I said about X", "I meant Y"). Apply any corrections to the existing bullets: fix them, merge them, or remove them if the writer retracted them. Add genuinely new content as new bullets. Do not invent facts. Keep first-person casual voice, short bullets.
+Return ONLY JSON: {"bullets": ["the FULL updated list of bullets"], "title": "3-6 word title (keep the current one unless the content changed a lot)", "emoji": "one emoji", "mood": "one or two word mood", "score": integer 1-5 (1 = awful, 2 = low or stressed, 3 = rare, truly flat, 4 = good, 5 = great; judge only by how the writer sounds about her own day, use the full range, never pick 3 to be safe. Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.), "wins": ["up to 3 short first-person positive moments from the WRITER: something good that happened, something she did well or is proud of, or something she is looking forward to; empty list if there is none; never invent, never from the buddy"], "themes": ["up to 3 one-word themes"], "changes": "one short sentence on what you fixed or added, e.g. 'fixed the meeting time, added 2 bullets'"}
+
+Current title: ${e.title}
+Current bullets:
+${JSON.stringify(e.bullets||[])}
+
+New transcription:
+"""${raw}"""`;
+    try{
+      const r = await sample.json(prompt, {modelTier:'complex'});
+      if(r && Array.isArray(r.bullets) && r.bullets.length){
+        merged = {
+          ...e, raw: mergedRaw, tidy:true,
+          title:String(r.title||e.title).slice(0,60),
+          emoji:String(r.emoji||e.emoji||'💗').slice(0,4),
+          mood:String(r.mood||e.mood||'').slice(0,30),
+          score:Math.min(5,Math.max(1,Math.round(Number(r.score)||e.score||3))),
+          bullets:r.bullets.map(x=>String(x).slice(0,300)).slice(0,25),
+          themes:Array.isArray(r.themes)?r.themes.map(x=>String(x).slice(0,20)).slice(0,3):(e.themes||[]),
+          wins:Array.isArray(r.wins)?r.wins.map(w=>String(w).trim().slice(0,140)).filter(Boolean).slice(0,3):(e.wins||[]),
+          note: r.changes ? String(r.changes).slice(0,160) : 'updated from your new note'
+        };
+      }
+    }catch(err){}
+  }
+  if(!merged){
+    const t = fallbackTidy(raw);
+    merged = {...e, raw:mergedRaw, bullets:[...(e.bullets||[]), ...t.bullets].slice(0,25), note:"couldn't auto-apply corrections, new bullets were just added"};
+  }
+  adding.delete(e.id);
+  try{ await store.save(merged); updateProfiles(merged); }catch(err){ adding.add(e.id); }
+  render();
+}
+function tapConfirm(btn, armedText, fn){
+  btn.addEventListener('click', ()=>{
+    if(btn.dataset.armed){ clearTimeout(btn._t); delete btn.dataset.armed; btn.textContent = btn.dataset.orig; fn(); return; }
+    btn.dataset.orig = btn.textContent; btn.dataset.armed = '1'; btn.textContent = armedText;
+    btn._t = setTimeout(()=>{ delete btn.dataset.armed; btn.textContent = btn.dataset.orig; }, 4000);
+  });
+}
+async function removeEntry(id){
+  try{ await store.remove(id); unprofileEntry(id); }catch(e){}
+}
+
+/* ---------- text to speech ---------- */
+const TTS = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+let speakingKey = null, speakId = 0, voiceName = '';
+const loadingKeys = new Set();
+const gossipCache = new Map();
+const gossipOn = () => { const g = $('#gossip'); return !!(g && g.checked); };
+try{ voiceName = localStorage.getItem('journal-voice')||''; }catch(e){}
+function cleanForSpeech(t){ return String(t).replace(/\p{Extended_Pictographic}/gu,'').replace(/#/g,'').replace(/\s+/g,' ').trim(); }
+function refreshTTS(){
+  document.querySelectorAll('.tts').forEach(b=>{ b.textContent = b.dataset.key===speakingKey ? '⏹ stop' : (loadingKeys.has(b.dataset.key) ? '✍ writing the tea…' : b.dataset.label); });
+}
+function stopSpeak(){ speakId++; speakingKey = null; try{ speechSynthesis.cancel(); }catch(e){} refreshTTS(); }
+function speak(text,key,done){
+  if(!TTS) return;
+  if(speakingKey===key){ stopSpeak(); return; }
+  stopSpeak();
+  const clean = cleanForSpeech(text).replace(/\s*[—–]\s*/g,', ').replace(/\.{2,}/g,'.'); if(!clean) return;
+  const parts = clean.match(/[^.!?]+[.!?]*/g) || [clean];
+  const chunks = []; let cur = '';
+  parts.forEach(pt=>{ if((cur+pt).length>110 && cur){ chunks.push(cur); cur = pt; } else cur += pt; });
+  if(cur) chunks.push(cur);
+  speakingKey = key; const myId = ++speakId;
+  const voice = speechSynthesis.getVoices().find(v=>v.name===voiceName);
+  const rate = parseFloat($('#rate').value) || 1;
+  chunks.forEach((c,i)=>{
+    const u = new SpeechSynthesisUtterance(c.trim());
+    u.rate = rate*0.94; u.volume = 1; u.pitch = /[!]$/.test(c.trim())?1.06:0.97; if(voice){ u.voice = voice; u.lang = voice.lang; }
+    if(i===chunks.length-1){ u.onend = u.onerror = () => { if(speakId===myId){ speakingKey = null; refreshTTS(); if(done) done(); } }; }
+    speechSynthesis.speak(u);
+  });
+  refreshTTS();
+}
+function unlockSpeech(){ if(!TTS) return; try{ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }catch(e){} }
+async function listen(textFn,key){
+  unlockSpeech();
+  if(speakingKey===key){ stopSpeak(); return; }
+  if(loadingKeys.has(key)) return;
+  let text = textFn();
+  if(gossipOn()){
+    const ck = key+'|'+text;
+    if(gossipCache.has(ck)){ text = gossipCache.get(ck); }
+    else{
+      const sample = await getSample();
+      if(sample){
+        loadingKeys.add(key); refreshTTS();
+        const prompt =
+`Rewrite the journal content below as a short spoken narration in the style of a witty, knowing, gossipy teen-drama narrator: breathy, playful, a little dramatic, talking about "our main character" in third person. Rules: keep every real detail and feeling, do not invent events, people or facts, do not quote any TV show lines, no emojis, no hashtags, no stage directions. Use short sentences with natural pauses, 60 to 160 words. End with a playful "xoxo" sign-off. Return only the narration text.
+
+Journal content:
+"""${text.slice(0,4000)}"""`;
+        try{
+          const r = await sample(prompt, {modelTier:'quick'});
+          const out = String(r.text||'').trim();
+          if(out){ gossipCache.set(ck,out); text = out; }
+        }catch(e){}
+        loadingKeys.delete(key);
+      }
+    }
+  }
+  speak(text,key);
+}
+function ttsBtn(label,key,textFn){
+  return el('button',{class:'ghost tiny tts','data-key':key,'data-label':label,text:speakingKey===key?'⏹ stop':label,onclick:()=>listen(textFn,key)});
+}
+function entryText(e){
+  return [e.title+'.', e.mood?('Mood: '+e.mood+'.'):'', ...(e.bullets||[]).map(b=>String(b).replace(/[.!?\s]+$/,'')+'.')].join(' ');
+}
+function dayText(d){
+  return prettyDate(d.date)+'. '+d.items.map(e=>'At '+timeStr(e.ts)+'. '+entryText(e)).join(' ');
+}
+function initTTS(){
+  if(!TTS){ const h = $('#voicehint'); if(h) h.textContent = "this browser can't read aloud, so listen buttons aren't available here. it works in browsers that support speech, like Safari or Chrome."; return; }
+  $('#ttsrow').hidden = false; $('#chatreadwrap').hidden = false;
+  const sel = $('#voice');
+  const fill = () => {
+    const all = speechSynthesis.getVoices();
+    if(!all.length){ return; }
+    let list = all.filter(v=>/^en/i.test(v.lang)); if(!list.length) list = all;
+    const qual = v => /natural|neural|premium|enhanced|siri/i.test(v.name);
+    const score = v => (qual(v)?6:0) + (/google|microsoft|neural|natural/i.test(v.name)?3:0) + (v.localService?1:0) + (/aria|jenny|ava|allison|samantha|serena|zoe|karen|moira|tessa|libby|sonia|google uk english female|google us english/i.test(v.name)?1:0);
+    list = list.slice().sort((a,b)=>score(b)-score(a) || a.name.localeCompare(b.name));
+    let manual = false; try{ manual = localStorage.getItem('journal-voice-manual')==='1'; }catch(e){}
+    if((!voiceName || !manual) && list.length) voiceName = list[0].name;
+    sel.replaceChildren(el('option',{value:'',text:'default'}), ...list.map(v=>el('option',{value:v.name,text:(qual(v)?'★ ':'')+v.name+(v.localService?'':' (online)')})));
+    sel.value = list.some(v=>v.name===voiceName) ? voiceName : '';
+    const nq = list.filter(qual).length;
+    $('#voicehint').textContent = nq ? nq+' enhanced voice'+(nq>1?'s':'')+' found, marked ★' : 'your phone is only sharing '+list.length+' basic voices with web pages (no enhanced/premium ones), so this is as good as it gets here';
+  };
+  fill();
+  try{ speechSynthesis.onvoiceschanged = fill; }catch(e){}
+  sel.addEventListener('change',()=>{ voiceName = sel.value; try{ localStorage.setItem('journal-voice', voiceName); localStorage.setItem('journal-voice-manual','1'); }catch(e){} stopSpeak(); speak("Hey, it's your journal. How does this voice sound?",'voice-test'); });
+  try{ $('#gossip').checked = localStorage.getItem('journal-gossip')!=='off'; }catch(e){}
+  $('#gossip').addEventListener('change',()=>{ try{ localStorage.setItem('journal-gossip', gossipOn()?'on':'off'); }catch(e){} stopSpeak(); });
+  $('#chatread').addEventListener('change',ev=>{
+    if(ev.target.checked){ try{ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }catch(e){} }
+    else stopSpeak();
+  });
+}
+
+/* ---------- grouping + stats ---------- */
+function groupByDay(){
+  const g = {};
+  entries.forEach(e => (g[e.date] = g[e.date]||[]).push(e));
+  Object.values(g).forEach(a => a.sort((x,y)=>y.ts-x.ts));
+  return Object.keys(g).sort().reverse().map(d => ({date:d, items:g[d]}));
+}
+function dayAvg(items){
+  const s = items.filter(i=>i.tidy!==false);
+  if(!s.length) return null;
+  return s.reduce((a,i)=>a+i.score,0)/s.length;
+}
+function dayGood(d){ return d.items.some(e=>e.wins && e.wins.length) || (dayAvg(d.items)||0)>=3.5; }
+function goodStreak(days){
+  const set = new Set(days.filter(dayGood).map(d=>d.date));
+  let n = 0, ds = todayStr();
+  if(!set.has(ds)) ds = addDays(ds,-1);
+  while(set.has(ds)){ n++; ds = addDays(ds,-1); }
+  return n;
+}
+function streak(days){
+  const set = new Set(days.map(d=>d.date));
+  let n = 0; const d = new Date();
+  const fmt = x => x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+  if(!set.has(fmt(d))) d.setDate(d.getDate()-1);
+  while(set.has(fmt(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+
+let range = '7';
+try{ const r0 = localStorage.getItem('journal-range'); if(['7','30','90','all'].includes(r0)) range = r0; }catch(e){}
+function ymd(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+function addDays(ds,k){ const [y,m,d] = ds.split('-').map(Number); return ymd(new Date(y,m-1,d+k)); }
+function dayNum(ds){ const [y,m,d] = ds.split('-').map(Number); return Math.round(Date.UTC(y,m-1,d)/864e5); }
+function rangeInfo(days){
+  const to = todayStr();
+  if(range==='all'){ const first = days.length ? days[days.length-1].date : to; return {from: first<to?first:to, to, end:to, n:null, label:'all time'}; }
+  const n = Number(range);
+  if(range==='7'){ const dow = new Date().getDay(), from = addDays(to,-dow); return {from, to, end:addDays(from,6), n:dow+1, label:'this week', prevLabel:'last week', prevFrom:addDays(from,-7), prevTo:addDays(from,-1)}; }
+  return {from:addDays(to,-(n-1)), to, end:to, n, label:'last '+n+' days', prevLabel:'the '+n+' days before', prevFrom:addDays(to,-(2*n-1)), prevTo:addDays(to,-n)};
+}
+function inRange(days,a,b){ return days.filter(d=>d.date>=a && d.date<=b); }
+function avgOf(rd){ const sc = rd.map(d=>dayAvg(d.items)).filter(v=>v!=null); return sc.length ? sc.reduce((x,y)=>x+y,0)/sc.length : null; }
+
+function renderStats(days){
+  document.querySelectorAll('#ranges [data-r]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.r===range)));
+  const ri = rangeInfo(days), rd = inRange(days, ri.from, ri.to), avg = avgOf(rd);
+  const box = $('#stats'); box.replaceChildren();
+  const mk = (v,l) => el('div',{class:'stat'}, el('b',{text:v}), el('span',{text:l}));
+  box.append(
+    mk(avg==null?'–':MOODS[Math.round(avg)]+' '+avg.toFixed(1),'avg mood'),
+    mk(rd.length+(ri.n?' of '+ri.n:''),'days logged'),
+    mk(String(streak(days)),'day streak'),
+    mk(String(goodStreak(days)),'good days in a row')
+  );
+  const t = $('#trend');
+  if(ri.n){
+    const prev = avgOf(inRange(days, ri.prevFrom, ri.prevTo));
+    if(avg!=null && prev!=null){
+      const diff = avg-prev;
+      t.textContent = ri.label+': '+avg.toFixed(1)+', vs '+prev.toFixed(1)+' '+(range==='7'?'':'in ')+ri.prevLabel+' ('+(diff>0.05?'trending up':diff<-0.05?'trending down':'about the same')+')';
+    }else t.textContent = ri.label+(avg==null?': no mood entries yet':'');
+  }else t.textContent = 'all time, '+rd.length+(rd.length===1?' day':' days')+' logged';
+}
+
+function renderChart(days){
+  const box = $('#chart'); box.replaceChildren();
+  const ri = rangeInfo(days);
+  const pts = inRange(days, ri.from, ri.to).map(d=>({date:d.date, v:dayAvg(d.items)})).filter(p=>p.v!=null).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!pts.length){ box.append(el('p',{class:'hint',text:'no mood entries in this range yet 🌊'})); return; }
+  const W=600,H=180,pl=34,pr=14,pt=14,pb=28;
+  const d0 = dayNum(ri.from), span = Math.max(1, dayNum(ri.end)-d0);
+  const x = ds => pl + (dayNum(ds)-d0)/span*(W-pl-pr);
+  const y = v => pt + (5-v)*(H-pt-pb)/4;
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('class','chart');
+  svg.setAttribute('role','img'); svg.setAttribute('aria-label','Mood over '+ri.label);
+  const add = (tag,attrs,text) => { const n = document.createElementNS(NS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); if(text) n.textContent = text; svg.append(n); return n; };
+  for(let v=1; v<=5; v++){
+    add('line',{x1:pl,x2:W-pr,y1:y(v),y2:y(v),stroke:'var(--line)','stroke-dasharray':'4 6'});
+    add('text',{x:2,y:y(v)+6,'font-size':16},MOODS[v]);
+  }
+  if(pts.length>1){
+    const path = pts.map((p,i)=>(i?'L':'M')+x(p.date)+' '+y(p.v)).join(' ');
+    add('path',{d:path+` L${x(pts[pts.length-1].date)} ${H-pb} L${x(pts[0].date)} ${H-pb} Z`,fill:'var(--pink)','fill-opacity':.18});
+    add('path',{d:path,fill:'none',stroke:'var(--hot)','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'});
+  }
+  const r = pts.length>45 ? 3 : 6;
+  pts.forEach(p=>add('circle',{cx:x(p.date),cy:y(p.v),r,fill:'var(--card)',stroke:'var(--hot)','stroke-width':pts.length>45?2:3}));
+  const ticks = [];
+  const total = dayNum(ri.end)-d0;
+  const step = range==='7' ? 1 : range==='30' ? 5 : range==='90' ? 15 : Math.max(1, Math.ceil(total/5));
+  for(let k=0; k<=total; k+=step) ticks.push(addDays(ri.from,k));
+  ticks.forEach(ds=>{
+    const [yy,mm,dd] = ds.split('-').map(Number);
+    const label = range==='7' ? new Date(yy,mm-1,dd).toLocaleDateString(undefined,{weekday:'short'}) : (mm+'/'+dd);
+    add('text',{x:x(ds),y:H-8,'text-anchor':'middle','font-size':12,fill:'var(--soft)'},label);
+  });
+  box.append(svg);
+}
+
+/* ---------- log ---------- */
+function renderLog(days){
+  const log = $('#log'); log.replaceChildren();
+  if(!days.length){
+    log.append(el('div',{class:'empty',text:'nothing here yet ✿ your first entry will show up as a cute little day card.'}));
+    return;
+  }
+  if(firstRender){ openDays.add(days[0].date); firstRender = false; }
+  days.forEach(d => {
+    const avg = dayAvg(d.items);
+    const emo = avg==null ? '📝' : MOODS[Math.round(avg)];
+    const titles = d.items.map(i=>i.title).join(' · ');
+    const det = el('details',{class:'day'});
+    if(openDays.has(d.date)) det.open = true;
+    det.addEventListener('toggle',()=>{ det.open ? openDays.add(d.date) : openDays.delete(d.date); });
+    det.append(el('summary',null,
+      el('div',{class:'emo',text:emo}),
+      el('div',{class:'dtitle'}, el('b',{text:prettyDate(d.date)}), el('span',{text:titles})),
+      el('span',{class:'chip',text:d.items.length+(d.items.length===1?' entry':' entries')}),
+      el('span',{class:'chev','aria-hidden':'true',text:'›'})
+    ));
+    const body = el('div',{class:'daybody'});
+    if(TTS) body.append(el('div',{class:'acts',style:'margin:0 0 4px'}, ttsBtn('🔊 listen to this day','day-'+d.date,()=>dayText(d))));
+    d.items.forEach(e => {
+      const top = el('div',{class:'etop'},
+        el('span',{text:e.emoji||'💗'}),
+        el('strong',{text:e.title}),
+        e.source==='chat' ? el('span',{class:'chip',text:'💬 chat'}) : null,
+        e.mood ? el('span',{class:'chip',text:e.mood}) : null,
+        ...(e.themes||[]).map(t=>el('span',{class:'chip',text:'#'+t})),
+        el('span',{class:'hint',style:'margin:0 0 0 auto',text:timeStr(e.ts)})
+      );
+      if(editing.has(e.id)){
+        const ti = el('input',{type:'text',value:e.title||'','aria-label':'Entry title'});
+        const di = el('input',{type:'date',value:e.date,'aria-label':'Entry date'});
+        const tmi = el('input',{type:'time',value:tsTime(e.ts),'aria-label':'Entry time'});
+        const ta = el('textarea',{'aria-label':'Bullet points, one per line'});
+        ta.value = (e.bullets||[]).join('\n');
+        let sc = e.score||3;
+        const moodRow = el('div',{class:'modes',role:'group','aria-label':'Mood score',style:'margin:0'});
+        const paint = () => [...moodRow.children].forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.v)===sc)));
+        for(let v=1; v<=5; v++) moodRow.append(el('button',{class:'mode',type:'button','data-v':v,text:MOODS[v],onclick:()=>{ sc=v; paint(); }}));
+        paint();
+        const acts = el('div',{class:'acts'},
+          el('button',{class:'primary tiny',text:'save changes',onclick:async()=>{
+            const bullets = ta.value.split('\n').map(x=>x.replace(/^[\s•\-*]+/,'').trim()).filter(Boolean);
+            if(!bullets.length){ ta.focus(); return; }
+            editing.delete(e.id);
+            const date = di.value || e.date;
+            if(date!==e.date) openDays.add(date);
+            const upd = {...e, title:ti.value.trim()||e.title, bullets, date, score:sc, scoreSet:(sc!==e.score?true:e.scoreSet), mood:sc!==e.score?['','very low','low','okay','good','great'][sc]:e.mood, note:null, ts:toTs(date,tmi.value||tsTime(e.ts))};
+            try{ await store.save(upd); updateProfiles(upd); }catch(err){ editing.add(e.id); }
+            render();
+          }}),
+          el('button',{class:'ghost tiny',text:'cancel',onclick:()=>{ editing.delete(e.id); render(); }})
+        );
+        body.append(el('div',{class:'entry'}, el('div',{class:'editbox'}, ti, el('div',{class:'row',style:'margin:0'},di,tmi), moodRow, ta, el('span',{class:'hint',style:'margin:0',text:'one bullet per line'})), acts));
+        return;
+      }
+      const ul = el('div',null, el('ul',null,(e.bullets||[]).map(b=>el('li',{text:b}))), (e.wins&&e.wins.length) ? el('p',{class:'hint',style:'margin:2px 0 6px',text:'✨ '+e.wins.join(' · ')}) : null);
+      const noteEl = e.note ? el('p',{class:'hint',style:'margin:4px 0',text:'✎ '+e.note}) : null;
+      const raw = el('details',{class:'raw'}, el('summary',{text:'original transcription'}), el('p',{text:e.raw}));
+      const acts = el('div',{class:'acts'});
+      if(TTS) acts.append(ttsBtn('🔊 listen','e-'+e.id,()=>'At '+timeStr(e.ts)+'. '+entryText(e)));
+      acts.append(el('button',{class:'ghost tiny',text:'edit',onclick:()=>{ editing.add(e.id); render(); }}));
+      acts.append(el('button',{class:'ghost tiny',text:'+ add transcription',onclick:()=>{ adding.add(e.id); render(); }}));
+      if(e.tidy===false) acts.append(el('button',{class:'ghost tiny',text:'retry tidy-up',onclick:ev=>retry(e,ev.currentTarget)}));
+      const delBtn = el('button',{class:'ghost tiny',text:'delete'});
+      tapConfirm(delBtn,'tap again to delete',()=>removeEntry(e.id));
+      acts.append(delBtn);
+      let addPanel = null;
+      if(adding.has(e.id)){
+        const nt = el('textarea',{placeholder:'add more, or correct something, e.g. "that second bullet was wrong, it was actually…"','aria-label':'Additional transcription'});
+        addPanel = el('div',{class:'editbox'}, nt, el('div',{class:'acts'},
+          el('button',{class:'primary tiny',text:'tidy & add',onclick:ev=>addTranscription(e,nt.value,ev.currentTarget)}),
+          el('button',{class:'ghost tiny',text:'cancel',onclick:()=>{ adding.delete(e.id); render(); }})
+        ));
+      }
+      body.append(el('div',{class:'entry'},top,ul,noteEl,raw,addPanel,acts));
+    });
+    det.append(body);
+    log.append(det);
+  });
+}
+
+/* ---------- analysis ---------- */
+async function analyze(){
+  const box = $('#analysis'); const btn = $('#analyze');
+  const all0 = groupByDay(); const ri0 = rangeInfo(all0); const days = inRange(all0, ri0.from, ri0.to).slice(0,45).reverse();
+  if(days.length < 2){ box.replaceChildren(el('p',{class:'hint',text:'need at least 2 days logged to spot patterns.'})); return; }
+  const sample = await getSample();
+  if(!sample){ box.replaceChildren(el('p',{class:'hint',text:'analysis is not available in this view.'})); return; }
+  btn.disabled = true; btn.textContent = 'reading your days…';
+  const data = days.map(d=>({date:d.date, entries:d.items.map(i=>({title:i.title,mood:i.mood,score:i.score,bullets:i.bullets,themes:i.themes}))}));
+  const prompt =
+`You analyze someone's journal like her close girl best friend would: warm, observant, a little teasing and concise. Never use pet names such as bestie or babe. Bullets that start with 💬 are the chat buddy's takes, not facts about the writer's life, so do not treat them as events or feelings. Only describe patterns that are actually in the data; do not give advice or tell them what to do, and do not diagnose anything.
+Return ONLY JSON: {"vibe": "one sentence about the overall mood across these days", "patterns": ["2-4 specific observations, e.g. recurring themes, what days looked higher or lower, what seems to go with good or low moods"], "highlight": "the best day and why, one sentence", "lowlight": "the toughest day and why, one sentence, or empty string if none"}
+
+Journal data:
+${JSON.stringify(data)}`;
+  try{
+    const r = await sample.json(prompt);
+    const wrap = el('div',{class:'analysis bounce'},
+      el('h3',{text:'your vibe check ✨'}),
+      el('p',{text:r.vibe||''}),
+      el('ul',null,(r.patterns||[]).map(p=>el('li',{text:String(p)}))),
+      r.highlight ? el('p',null,el('strong',{text:'💖 high: '}),String(r.highlight)) : null,
+      r.lowlight ? el('p',null,el('strong',{text:'🌧 low: '}),String(r.lowlight)) : null,
+      TTS ? ttsBtn('🔊 listen','analysis',()=>[r.vibe,...(r.patterns||[]),r.highlight,r.lowlight].filter(Boolean).join('. ')) : null
+    );
+    box.replaceChildren(wrap);
+  }catch(e){
+    box.replaceChildren(el('p',{class:'hint',text:"couldn't analyze right now, try again in a bit."}));
+  }
+  btn.disabled = false; btn.textContent = 'analyze my days ✨';
+}
+
+/* ---------- tabs + chat ---------- */
+let curTab = 'chat', curMode = 'chat';
+try{ if(localStorage.getItem('journal-mode')==='entry') curMode = 'entry'; }catch(e){}
+function applyView(){
+  $('#panel-chat').hidden = !(curTab==='chat' && curMode==='chat');
+  $('#panel-journal').hidden = !(curTab==='chat' && curMode==='entry');
+  $('#panel-world').hidden = curTab!=='world';
+  $('#modes').hidden = curTab!=='chat';
+  $('#tab-chat').setAttribute('aria-selected', String(curTab==='chat'));
+  $('#tab-world').setAttribute('aria-selected', String(curTab==='world'));
+  $('#mode-chat').setAttribute('aria-pressed', String(curMode==='chat'));
+  $('#mode-entry').setAttribute('aria-pressed', String(curMode==='entry'));
+}
+function setTab(name){
+  if(name==='world') scheduleCatchUp();
+  curTab = name; applyView();
+}
+function setMode(m){
+  curMode = m;
+  try{ localStorage.setItem('journal-mode', m); }catch(e){}
+  applyView();
+}
+let chat = [];
+let streamText = null;
+let chatBusy = false;
+let chatTimeTouched = false;
+let chatEntryId = null;
+try{
+  const d = JSON.parse(localStorage.getItem('journal-chat-draft')||'[]');
+  if(Array.isArray(d)) chat = d; else { chat = d.chat||[]; chatEntryId = d.id||null; }
+}catch(e){}
+function persistChat(){ try{ localStorage.setItem('journal-chat-draft', JSON.stringify({chat, id:chatEntryId})); }catch(e){} }
+function userTextOf(transcript){
+  return transcript.split('\n').filter(l=>l.startsWith('Me: ')).map(l=>l.slice(4)).join(' ');
+}
+function chatTranscript(){ return chat.map(m=>(m.role==='user'?'Me: ':'Buddy: ')+m.content+(m.shot?'\n[text from the screenshot she shared]\n'+m.shot:'')).join('\n'); }
+function tidyChat(){
+  const mine = chat.filter(m=>m.role==='user');
+  return tidy(chatTranscript(), true, mine.map(m=>m.content).join(' '));
+}
+async function persistChatEntry(t){
+  if(!chatEntryId) chatEntryId = 'entry-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const date = $('#chatdate').value || todayStr();
+  const { readable, memories, ...rest } = t;
+  const e = { id:chatEntryId, date, ts:toTs(date,$('#chattime').value||nowTime()), raw:chatTranscript(), source:'chat', ...rest };
+  openDays.add(date);
+  persistChat();
+  await store.save(e);
+  if(memories && memories.length) await addMemories(memories);
+  updateProfiles(e);
+}
+let evaluating = false;
+let savedSig = '';
+let saveTimer = null;
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'){ clearTimeout(saveTimer); maybeSaveChat(); } });
+async function maybeSaveChat(){
+  const mine = chat.filter(m=>m.role==='user');
+  const chars = mine.reduce((a,m)=>a+m.content.length,0);
+  const sig = chatEntryId+':'+chat.length;
+  if(!store || evaluating || chatBusy || (mine.length<2 && chars<120) || chars<60 || sig===savedSig) return;
+  evaluating = true;
+  try{
+    const t = await tidyChat();
+    if(t && t.tidy && t.readable!==false){ await persistChatEntry(t); savedSig = chatEntryId+':'+chat.length; }
+    else savedSig = sig;
+  }catch(err){}
+  evaluating = false;
+}
+async function addMemories(list){
+  const cur = memoryItems.slice();
+  list.forEach(x=>{
+    const t = String(x).trim(); if(!t) return;
+    const k = t.toLowerCase();
+    if(cur.some(m=>{ const j=m.t.toLowerCase(); return j===k || j.includes(k) || k.includes(j); })) return;
+    cur.push({t, ts:Date.now()});
+  });
+  memoryItems = cur.slice(-40);
+  renderMem();
+  try{ await store.saveMemory(memoryItems); }catch(e){}
+}
+function renderMem(){
+  const ul = $('#memlist'); if(!ul) return;
+  ul.replaceChildren();
+  $('#memsum').textContent = '⚙ buddy memory ('+memoryItems.length+')';
+  if(!memoryItems.length){ ul.append(el('li',null,el('span',{class:'hint',style:'margin:0',text:'nothing yet. real chats teach me about you over time.'}))); }
+  memoryItems.forEach((m,i)=>{
+    ul.append(el('li',null,
+      el('span',{text:m.t}),
+      (()=>{ const b = el('button',{'aria-label':'Forget this',text:'×'}); tapConfirm(b,'sure?',async()=>{ memoryItems = memoryItems.filter((_,j)=>j!==i); renderMem(); try{ await store.saveMemory(memoryItems); }catch(e){} }); return b; })()
+    ));
+  });
+}
+function archiveChat(){
+  if(chat.length<2) return;
+  let arch = []; try{ arch = JSON.parse(localStorage.getItem('journal-chat-archive')||'[]'); }catch(e){}
+  arch.push({ts:Date.now(), turns:chat.slice(-30).map(m=>({role:m.role,content:m.content+(m.shot?'\n[screenshot text] '+m.shot.slice(0,800):'')}))});
+  try{ localStorage.setItem('journal-chat-archive', JSON.stringify(arch.slice(-4))); }catch(e){}
+}
+function recentConvos(){
+  let arch = []; try{ arch = JSON.parse(localStorage.getItem('journal-chat-archive')||'[]'); }catch(e){}
+  const items = arch.map(a=>({ts:a.ts, text:(a.turns||[]).map(m=>(m.role==='user'?'Her: ':'You: ')+m.content).join('\n')}));
+  entries.filter(e=>e.source==='chat' && e.raw && e.id!==chatEntryId).forEach(e=>items.push({ts:e.ts, text:e.raw.replace(/^Me: /gm,'Her: ').replace(/^Buddy: /gm,'You: ')}));
+  items.sort((a,b)=>b.ts-a.ts);
+  const out = [], seen = new Set();
+  for(const it of items){
+    const k = it.text.slice(0,80); if(seen.has(k)) continue; seen.add(k);
+    out.push(new Date(it.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'})+':\n'+it.text.slice(-900));
+    if(out.length>=2) break;
+  }
+  return out;
+}
+function chatContext(){
+  const mem = memoryItems.map(m=>m.t).slice(-30);
+  const recent = entries.filter(e=>e.tidy!==false).sort((a,b)=>b.ts-a.ts).slice(0,8)
+    .map(e=>e.date+' ('+(e.mood||'')+', '+e.score+'/5): '+(e.bullets||[]).filter(b=>!String(b).startsWith('💬')).slice(0,3).join('; ')).map(x=>x.slice(0,300));
+  const ppl = profiles.filter(p=>p.kind==='person' && p.summary).slice(0,12).map(p=>(p.name+(p.relation?' ('+p.relation+')':'')+': '+p.summary).slice(0,200));
+  const convos = recentConvos();
+  const gls = profiles.filter(p=>p.kind==='goal').sort((a,b)=>profStats(b).last-profStats(a).last).slice(0,6).map(p=>p.name+': '+((p.events||[]).slice(-2).map(x=>x.text).join('; ')||p.summary||'').slice(0,160));
+  const cyc = cycleToday();
+  const upc = profiles.filter(p=>p.kind==='event' && p.status==='upcoming' && p.date>=todayStr()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5).map(p=>p.date+': '+p.title);
+  if(!mem.length && !recent.length && !ppl.length && !convos.length) return '';
+  return "\n\nBackground about the user (use it naturally to be personal when relevant; do not recite it, do not force it into every reply, and do not bring up heavy or sensitive things unless they do):\nRemembered facts: "+JSON.stringify(mem)+"\nRecent journal entries: "+JSON.stringify(recent)+"\nPeople in their life: "+JSON.stringify(ppl)+"\nYour recent chats with her, most recent first (so you can pick up where you left off): "+JSON.stringify(convos)+"\nComing up for her: "+JSON.stringify(upc)+(cyc?"\nCycle: "+(cyc.ongoing?"on her period, day ":"day ")+cyc.day+(cyc.ongoing?"":" since her period ended")+", "+PHASE_LABEL[cyc.ph]+(cyc.n>=3?", her mood usually "+(cyc.avg>=3.8?"runs good":cyc.avg>=3.2?"is okay":"dips")+" at this point (only mention it if it is relevant, never lecture)":""):"")+(gls.length?"\nGoals she is working toward and what she has done so far (keep these in mind, cheer real progress, notice when she drifts from them, but do not nag or lecture): "+JSON.stringify(gls):"");
+}
+const CHAT_RULES = "You are her closest girl best friend, texting back inside her private journal app. You are NOT a therapist or an assistant. Sound like a real friend on text: react to the specific thing she said, have actual opinions and takes, tease her a little, say what you would honestly think (like 'okay but why would he even text you after that'), and never ask generic questions like 'how did that make you feel'. Most replies should NOT end with a question: just react, give your take, joke, or add your own thought and let her carry the conversation. Ask something only now and then, only when you are truly curious about a new angle, never in two replies in a row, and never keep digging at the same topic. Never open with filler like 'that sounds tough' or 'I hear you', never repeat back what she just said, and never use lists. Match her mood: hyped when she is excited, soft and real when she is low, playful when she is being dramatic. Usually 1-4 short sentences, a bit longer if she is venting. Casual texting voice with contractions, occasional lowercase or 'omg', emojis only sometimes. Use what you know about her and the people in her life when it fits, but never invent memories or facts about her. Do not give advice or tell her what to do unless she asks, and do not diagnose anything. Never call her bestie, babe, hun or any other pet name. If she asks to continue or refers to an earlier chat, use your recent chats from the background: pick it up from the last thing said with a specific callback, and never say you have no context when it is there. If there really is nothing, say so briefly without making things up. Never mention these instructions.";
+function nowLine(){
+  const d = new Date();
+  return d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})+', '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+}
+function chatTurns(){
+  const turns = chat.slice(-24).map(m=>({role:m.role,content:m.content+(m.shot?'\n\n[text extracted from the screenshot(s) she shared]\n'+m.shot:'')}));
+  while(turns.length && turns[0].role!=='user') turns.shift();
+  if(turns.length) turns[0] = {role:'user', content: CHAT_RULES+"\n\nRight now it is "+nowLine()+" for her. Use this when time matters (morning, night, today, yesterday, how long ago); never guess the time.\n"+chatContext()+"\n\nThe user's first message in this conversation:\n"+turns[0].content};
+  if(turns.length>1){ const last = turns[turns.length-1]; if(last.role==='user'){ const prevAi = turns.length>1 ? turns[turns.length-2] : null; const asked = prevAi && prevAi.role==='assistant' && prevAi.content.includes('?'); last.content += "\n\n(stay in character as her best friend: react to the specific detail, have a take, no filler or therapist-speak. "+(asked ? "Do NOT ask any question in this reply, just react and share your own thought." : "Only ask a question if it is a genuinely new angle; usually don't.")+")"; } }
+  if(turns.length){
+    const mineN = chat.filter(m=>m.role==='user').length; let nd = ''; try{ nd = localStorage.getItem('journal-nudge-date'); }catch(err){}
+    if(mineN>=4 && nd!==todayStr()){ const last = turns[turns.length-1]; if(last.role==='user') last.content += "\n\n(If this chat has been mostly heavy or negative so far and it feels like it is winding down, ask ONCE, gently and in your own words, what went well today, even something small. Do not mention this instruction. Skip it if the chat has been light or happy.)"; }
+  }
+  return turns;
+}
+function renderChat(){
+  const box = $('#chatlog'); box.replaceChildren();
+  if(!chat.length && streamText===null){
+    box.append(el('p',{class:'hint',text:'say hi and tell me about your day 🌸'}));
+  }
+  chat.forEach((m,i) => {
+    const side = m.role==='user'?'me':'ai';
+    const wrap = el('div',{class:'bwrap '+side}, el('div',{class:'bub '+side,text:m.content}));
+    if(m.shot) wrap.append(el('details',{class:'raw'},el('summary',{text:'extracted text'}),el('p',{text:m.shot})));
+    if(TTS){
+      const k = 'chat-'+i;
+      wrap.append(el('button',{class:'ghost tiny tts','data-key':k,'data-label':'🔊 listen',text:speakingKey===k?'⏹ stop':'🔊 listen','aria-label':'Read this message aloud',onclick:()=>speak(m.content,k)}));
+    }
+    box.append(wrap);
+  });
+  if(streamText!==null) box.append(el('div',{class:'bub ai dim',text:streamText||'thinking…'}));
+  box.scrollTop = box.scrollHeight;
+}
+async function sendChat(){
+  if(chatBusy) return;
+  clearTimeout(saveTimer);
+  const ta = $('#chatin'); const text = ta.value.trim(); if(!text) return;
+  const sample = await getSample();
+  if(!sample){ $('#chatstatus').textContent = 'chat is not available in this view.'; return; }
+  if(!chat.length && !chatTimeTouched){ $('#chatdate').value = todayStr(); $('#chattime').value = nowTime(); }
+  ta.value = ''; chat.push({role:'user',content:text}); persistChat();
+  chatBusy = true; streamText = ''; $('#chatsend').disabled = true; renderChat();
+  try{
+    const r = await sample(chatTurns(), {model:'claude-opus-5-5', modelTier:'complex', onText:({text})=>{ streamText = text; renderChat(); }});
+    chat.push({role:'assistant',content:r.text});
+    if(/went well|good thing|bright spot|win today|good today/i.test(r.text||'')){ try{ localStorage.setItem('journal-nudge-date', todayStr()); }catch(err){} }
+    if(TTS && $('#chatread').checked) speak(r.text,'chat');
+  }catch(e){
+    if(e && e.text){ chat.push({role:'assistant',content:e.text}); }
+    else { chat.pop(); ta.value = text; $('#chatstatus').textContent = "couldn't reach chat right now, your message is still in the box."; }
+  }
+  streamText = null; chatBusy = false; $('#chatsend').disabled = false; persistChat(); renderChat();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ if(chatBusy) return; maybeSaveChat(); }, 60000);
+}
+async function saveChat(){
+  const mine = chat.filter(m=>m.role==='user');
+  if(!mine.length){ $('#chatstatus').textContent = 'say something first.'; return; }
+  if(chatBusy || evaluating) return;
+  const btn = $('#chatsave'); btn.disabled = true; btn.textContent = 'making sense of it…';
+  const t = await tidyChat();
+  if(!t.tidy){
+    $('#chatstatus').textContent = "couldn't tidy that right now, your chat is still here.";
+  }else if(t.readable===false){
+    $('#chatstatus').textContent = "not enough here to read a mood from, so i didn't save it. keep chatting or start a new chat.";
+  }else{
+    try{
+      await persistChatEntry(t);
+      const date = $('#chatdate').value || todayStr();
+      archiveChat(); chat = []; chatEntryId = null; persistChat(); renderChat();
+      chatTimeTouched = false; $('#chatdate').value = todayStr(); $('#chattime').value = nowTime();
+      openDays.add(date);
+      $('#chatstatus').textContent = 'tidied and saved ♡ start a new chat anytime.';
+    }catch(err){
+      $('#chatstatus').textContent = "couldn't save that, your chat is still here.";
+    }
+  }
+  btn.disabled = false; btn.textContent = 'finish & tidy';
+}
+
+/* ---------- your world: people + topics ---------- */
+let profiles = [];
+const PROFILE_V = 3;
+function normMeta(d, ev, gl, gs, cy){
+  const out = {}, evo = {};
+  if(Array.isArray(d)) d.forEach(id=>{ out[id] = 3; });
+  else if(d && typeof d==='object') Object.keys(d).forEach(k=>{ out[k] = Number(d[k])||1; });
+  if(ev && typeof ev==='object') Object.keys(ev).forEach(k=>{ evo[k] = 1; });
+  const gso = {}; if(gs && typeof gs==='object') Object.keys(gs).forEach(k=>{ gso[k] = 1; });
+  const cyo = {}; if(cy && typeof cy==='object') Object.keys(cy).forEach(k=>{ cyo[k] = 1; });
+  return {done:out, ev:evo, gl:gl?1:0, gs:gso, cy:cyo};
+}
+let profMeta = {done:{}, ev:{}, gl:0, gs:{}, cy:{}};
+const openProfs = new Set();
+const renaming = new Set();
+const merging = new Set();
+async function mergeProf(keep, other){
+  if(!keep || !other || keep.id===other.id) return;
+  const evs = [...(keep.events||[])];
+  (other.events||[]).forEach(x=>{ if(!evs.some(y=>y.entryId===x.entryId && y.text===x.text)) evs.push(x); });
+  evs.sort((a,b)=>a.ts-b.ts); keep.events = evs.slice(-120);
+  keep.aliases = [...new Set([...(keep.aliases||[]), other.name, ...(other.aliases||[])].filter(a=>String(a).toLowerCase()!==keep.name.toLowerCase()))].slice(0,8);
+  keep.traits = [...new Set([...(keep.traits||[]), ...(other.traits||[])])].slice(0,8);
+  if(!keep.relation && other.relation) keep.relation = other.relation;
+  if(!keep.feeling && other.feeling) keep.feeling = other.feeling;
+  keep.summary = ''; keep.updated = Date.now();
+  await saveProf(keep);
+  await dropProf(other.id);
+  const sample = await getSample();
+  if(sample) await summarizeBatch(sample, [keep]);
+}
+let armedDel = null;
+let profBusy = false;
+let profErr = 0, profSaveErr = 0, profRead = 0, profFoundP = 0, profFoundT = 0, profFoundE = 0, profLastErr = '';
+const profQueue = [];
+const CAT = {office:'💼',home:'🏠',fitness:'💪',health:'🩺',food:'🍽',money:'💸',social:'🥂',learning:'📚',hobby:'🎨',travel:'✈️',other:'✨'};
+function setProgress(f){
+  const b = $('#pbar'); if(!b) return;
+  const p = Math.max(0, Math.min(100, Math.round(f*100)));
+  b.hidden = false; $('#pfill').style.width = p+'%'; b.setAttribute('aria-valuenow', String(p));
+}
+function hideProgress(){ const b = $('#pbar'); if(b) b.hidden = true; }
+function worldStatus(t){ const x = $('#worldstatus'); if(x) x.textContent = t||''; }
+function findProf(kind,name){
+  const k = String(name||'').toLowerCase().trim(); if(!k) return null;
+  return profiles.find(p=>p.kind===kind && (p.name.toLowerCase()===k || (p.aliases||[]).some(a=>String(a).toLowerCase()===k))) || null;
+}
+async function saveProf(p){
+  const i = profiles.findIndex(x=>x.id===p.id);
+  if(i>=0) profiles[i] = p; else profiles.push(p);
+  backupProfiles();
+  try{ await store.saveProfile(JSON.parse(JSON.stringify(p))); return true; }
+  catch(e){
+    profLastErr = (((e && e.code) || '')+' '+((e && e.message) || '')).trim() || 'unknown error';
+    worldStatus("couldn't save profiles to your journal ("+profLastErr+"). they're kept on this device and i'll retry.");
+    return false;
+  }
+}
+function backupProfiles(){ try{ localStorage.setItem('journal-profiles-bak', JSON.stringify(profiles)); }catch(e){} }
+let profDeleted = new Set();
+try{ profDeleted = new Set(JSON.parse(localStorage.getItem('journal-prof-del')||'[]')); }catch(e){}
+const dirtyIds = new Set();
+const flushTries = {};
+function mergeProfiles(dbList){
+  let bak = []; try{ bak = JSON.parse(localStorage.getItem('journal-profiles-bak')||'[]'); }catch(e){}
+  const byId = new Map(dbList.map(p=>[p.id,p]));
+  [...profiles, ...bak].forEach(m=>{
+    if(!m || !m.id || profDeleted.has(m.id)) return;
+    const d = byId.get(m.id);
+    if(!d || (m.updated||0) > (d.updated||0)){ byId.set(m.id, m); dirtyIds.add(m.id); }
+  });
+  return [...byId.values()].filter(p=>!profDeleted.has(p.id));
+}
+async function flushDirty(){
+  for(const id of [...dirtyIds]){
+    dirtyIds.delete(id);
+    const p = profiles.find(x=>x.id===id); if(!p) continue;
+    flushTries[id] = (flushTries[id]||0)+1;
+    if(flushTries[id] > 3) continue;
+    await saveProf(p);
+  }
+}
+async function dropProf(id){
+  profDeleted.add(id);
+  try{ localStorage.setItem('journal-prof-del', JSON.stringify([...profDeleted].slice(-300))); }catch(e){}
+  profiles = profiles.filter(x=>x.id!==id);
+  backupProfiles();
+  try{ await store.removeProfile(id); }catch(e){}
+}
+const profOpts = new Map();
+let rescan = null;
+function updateProfiles(e, opts){
+  if(!e || e.tidy===false || !store) return;
+  const i = profQueue.findIndex(x=>x.id===e.id);
+  if(i>=0) profQueue[i] = e; else profQueue.push(e);
+  if(opts) profOpts.set(e.id, opts); else profOpts.delete(e.id);
+  runProfQueue();
+}
+async function runProfQueue(){
+  if(profBusy) return;
+  profBusy = true; profErr = 0; profSaveErr = 0; profRead = 0; profFoundP = 0; profFoundT = 0; profFoundE = 0;
+  let doneN = 0;
+  while(profQueue.length){
+    while(chatBusy) await new Promise(r=>setTimeout(r,1500));
+    const e = profQueue.shift();
+    const totalN = doneN+1+profQueue.length;
+    if(totalN>=3){ worldStatus('reading entries… '+(doneN+1)+' of '+totalN); setProgress(doneN/totalN); }
+    else worldStatus('updating profiles…');
+    const o = profOpts.get(e.id); profOpts.delete(e.id);
+    try{ await profileOne(e, o); }catch(err){ if(rescan) rescan.errors++; }
+    doneN++;
+    await new Promise(r=>setTimeout(r,250));
+  }
+  if(doneN>=3) setProgress(1);
+  let rsMsg = '';
+  if(rescan) rsMsg = await finishRescan();
+  profBusy = false;
+  if(rsMsg) worldStatus(rsMsg); else worldStatus(
+    profSaveErr ? "couldn't save profiles ("+profLastErr+"). i'll try again next time you open the journal." :
+    profErr ? "couldn't read "+profErr+(profErr===1?' entry':' entries')+" just now, i'll try again next time you open the journal." :
+    profRead ? 'scanned '+profRead+(profRead===1?' entry':' entries')+': '+profFoundP+' people, '+profFoundT+' topic and '+profFoundE+' event mentions found.' : '');
+  hideProgress();
+  renderWorld();
+}
+const CONS = ' One event per real-world occurrence: if several things happened as part of the same situation or night (an argument, what was said, a decision made, staying out, how it ended), merge them into ONE event with a title that covers it, never several. Decisions and feelings that come out of an event belong inside it, not as separate events. Never list the same thing twice under different wording or different topics. Pick the single best topic. Usually 1 to 3 events per entry, 4 at most.';
+async function profileOne(e, opts){
+  const parts = (opts && opts.parts) || {people:true, topics:true, events:true, goals:true, cycle:true};
+  const sample = await getSample(); if(!sample){ profErr++; if(rescan) rescan.errors++; return; }
+  const text = ((e.source==='chat' ? userTextOf(e.raw) : e.raw) || '').slice(0,3500);
+  const known = profiles.map(p=>({name:p.name,kind:p.kind,aliases:p.aliases||[]}));
+  const prompt =
+`You maintain a private "who's who and what's going on" tracker from ONE journal entry. The writer is the "I" in the entry.
+Extract:
+${[parts.cycle?`- period: ONLY if the writer says her own menstrual period started or ended (e.g. "got my period", "period started", "period ended", "it finally stopped"). Give the date it started or ended, resolving words like today or yesterday from the entry date. Do not infer it from cramps or mood. Otherwise leave the list empty.`:'', parts.goals?`- goals: things she is actively working toward or has decided to pursue (a certification, a job switch, a fitness target, saving money, moving on from someone, finishing a project, a habit she is building). Name each goal in 2 to 5 plain words and reuse the exact name of an existing goal when it is the same goal. For each, "event" is one short sentence on what she did, decided, or where it stands in this entry (progress, a step taken, a setback, a new plan). Skip idle wishes and complaints. Max 3.`:'', parts.people?`- people: anyone other than the writer, by real name wherever one appears anywhere in the entry, including inside text pulled from screenshots (lines like "Other person: Nishant" or "Nishant:"); never name someone "the guy from the screenshots" or similar when a real name is available; otherwise by clear role (e.g. "my manager", "mom"). Max 4.`:'', parts.topics?`- topics: specific, reusable subjects she keeps coming back to, such as a project, a certification, workouts, sleep, money, a relationship situation, a decision she is weighing, a hobby, a trip. Prefer specific over vague ("AWS certification" or "Job switch", not just "Work"). Max 5.`:'', parts.events?`- events: anything concrete that happened or is planned, past or upcoming: a meeting, a call, a date, a message from someone, an argument, a decision, an outing, a workout, a purchase, a deadline, a trip, a doctor visit, a work milestone, something she did or finished. When in doubt, include it, but merge related moments into one.${CONS} Not pure feelings.`:''].filter(Boolean).join('\n')}
+Rules: use only what the entry says. Do not guess, diagnose or psychoanalyse anyone. Describe people by what they did or said and how the writer seems to feel about them. Leave out very sensitive details about other people (medical conditions, account numbers). If the person or topic matches an existing one (even by nickname or role), reuse the EXACT existing name and put the new nickname in "alias". Return empty arrays if there is nothing real.
+Return ONLY JSON: {${[parts.cycle?`"period":[{"type":"start or end","date":"YYYY-MM-DD"}]`:'', parts.goals?`"goals":[{"name":"","event":"what she did or decided about it, or where it stands"}]`:'', parts.people?`"people":[{"name":"","alias":"","relation":"short, e.g. manager, friend, sister, or empty","event":"one short sentence on what happened or came up","traits":["up to 3 short descriptors grounded in the entry"],"feeling":"how the writer seems to feel about them, 1-3 words, or empty"}]`:'', parts.topics?`"topics":[{"name":"","category":"office|home|fitness|health|food|money|social|learning|hobby|travel|other","event":"one concrete sentence with real substance, not just 'talked about it'","threads":["up to 3 short ongoing questions or open points inside this topic, or empty list"]}]`:'', parts.events?`"events":[{"title":"short title","date":"YYYY-MM-DD if stated or clearly implied (resolve words like tomorrow or Friday using the entry date and weekday), else empty","when":"past or upcoming","people":["names"],"topic":"related topic name or empty"}]`:''].filter(Boolean).join(',')}}
+
+Existing people and topics: ${JSON.stringify(known)}
+Entry date: ${e.date} (${new Date(e.date+'T00:00:00').toLocaleDateString('en',{weekday:'long'})})
+Entry:
+"""${text}"""`;
+  let r;
+  try{ r = await sample.json(prompt, (parts.events||parts.goals||parts.cycle)?{modelTier:'complex'}:undefined); }catch(err){ profErr++; if(rescan) rescan.errors++; return; }
+  if(!r){ profErr++; if(rescan) rescan.errors++; return; }
+  const touched = [];
+  let saved = true;
+  const upsert = (kind,o) => {
+    if(!o) return;
+    const name = String(o.name||'').trim().slice(0,40); if(!name) return;
+    let p = findProf(kind,name);
+    if(!p){
+      p = {id:kind+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), kind, name, aliases:[], relation:'', category:'', summary:'', traits:[], events:[]};
+      profiles.push(p);
+    }
+    if(rescan && rescan.kind===kind) rescan.pairs.add(p.id+'|'+e.id);
+    const al = String(o.alias||'').trim();
+    if(al && al.toLowerCase()!==p.name.toLowerCase() && !(p.aliases||[]).some(a=>String(a).toLowerCase()===al.toLowerCase())) p.aliases = [...(p.aliases||[]), al.slice(0,30)].slice(0,6);
+    if(kind==='person' && o.relation && !p.relation) p.relation = String(o.relation).slice(0,30);
+    if(kind==='topic'){ const c = String(o.category||'').toLowerCase(); if(CAT[c] && (!p.category || p.category==='other')) p.category = c; if(!p.category) p.category = 'other'; }
+    if(Array.isArray(o.traits)) p.traits = [...new Set([...(p.traits||[]), ...o.traits.map(t=>String(t).trim().slice(0,24)).filter(Boolean)])].slice(0,8);
+    if(kind==='topic' && Array.isArray(o.threads)) p.threads = [...new Set([...(p.threads||[]), ...o.threads.map(t=>String(t).trim().slice(0,60)).filter(Boolean)])].slice(-6);
+    if(o.feeling) p.feeling = String(o.feeling).slice(0,30);
+    const ne = {entryId:e.id, date:e.date, ts:e.ts, text:String(o.event||'').slice(0,200), score:e.score};
+    p.events = p.events||[];
+    const idx = p.events.findIndex(x=>x.entryId===e.id);
+    if(idx>=0) p.events[idx] = ne; else p.events.push(ne);
+    p.events.sort((a,b)=>a.ts-b.ts); p.events = p.events.slice(-120);
+    p.updated = Date.now();
+    if(!touched.includes(p)) touched.push(p);
+  };
+  profRead++;
+  const np = (Array.isArray(r.people)?r.people:[]).slice(0,4), nt = (Array.isArray(r.topics)?r.topics:[]).slice(0,5);
+  if(rescan) rescan.entries.add(e.id);
+  if(parts.goals){ (Array.isArray(r.goals)?r.goals:[]).slice(0,3).filter(o=>o && String(o.name||'').trim()).forEach(o=>upsert('goal',o)); }
+  if(parts.people){ np.forEach(o=>upsert('person',o)); profFoundP += np.length; }
+  if(parts.topics){ nt.forEach(o=>upsert('topic',o)); profFoundT += nt.length; }
+  const {touched:evTouched, keep:keepIds} = parts.events ? buildEvents(e, r.events) : {touched:[], keep:new Set()};
+  profFoundE += evTouched.length;
+  if(touched.length && opts && opts.rescan){
+    for(const p of touched){ if(!(await saveProf(p))){ saved = false; profSaveErr++; } }
+  }else if(touched.length){
+    try{
+      const items = touched.map(p=>({name:p.name,kind:p.kind,role:p.relation||p.category,feeling:p.feeling||'',previousSummary:p.summary||'',threads:p.threads||[],events:p.events.slice(-12).map(x=>x.date+': '+x.text+(x.score?' (entry mood '+x.score+'/5)':''))}));
+      const sp =
+`You are a thoughtful analyst keeping a private profile for each person and topic in someone's journal. For each item write "summary": 2 to 3 short sentences in second person ("you") saying who or what this is in the writer's life, plus any pattern or trend visible in the event log (how often it comes up, how it has changed, the writer's mood around it). For goals, say what the goal is, what she has actually done toward it so far, and what seems to be holding it up or next. For topics, also say what still seems open or unresolved and which sub-themes keep recurring. Use only the events given. No guessing, no diagnosing, no advice.
+Return ONLY JSON: {"items":[{"name":"exact name from input","summary":"..."}]}
+
+Items: ${JSON.stringify(items)}`;
+      const sr = await sample.json(sp);
+      (sr && Array.isArray(sr.items) ? sr.items : []).forEach(it=>{
+        const p = touched.find(x=>x.name.toLowerCase()===String(it.name||'').toLowerCase());
+        if(p && it.summary) p.summary = String(it.summary).slice(0,500);
+      });
+    }catch(err){}
+    for(const p of touched){ if(!(await saveProf(p))){ saved = false; profSaveErr++; } }
+  }
+  if(parts.events && !(await saveEvents(e, evTouched, keepIds, true))) saved = false;
+  if(parts.events && saved && ((profMeta.done[e.id]||0) < PROFILE_V || !profMeta.ev[e.id])){
+    profMeta.done[e.id] = PROFILE_V; profMeta.ev[e.id] = 1;
+    const keys = Object.keys(profMeta.done);
+    if(keys.length>2000) keys.slice(0,keys.length-2000).forEach(k=>{ delete profMeta.done[k]; });
+    try{ await store.saveMeta(profMeta); }catch(err){}
+  }
+  if(parts.cycle){
+    const keepC = new Set(); const cs = [];
+    (Array.isArray(r.period)?r.period:[]).slice(0,4).forEach(o=>{
+      const type = String((o&&o.type)||'').toLowerCase()==='end' ? 'end' : String((o&&o.type)||'').toLowerCase()==='start' ? 'start' : '';
+      const date = String((o&&o.date)||'');
+      if(!type || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date>addDays(todayStr(),1) || date<'2015-01-01') return;
+      const id = 'cycle-'+type+'-'+date; keepC.add(id);
+      cs.push({id, kind:'cycle', type, date, entryId:e.id, ts:e.ts, updated:Date.now()});
+    });
+    for(const c of cs){ if(!(await saveProf(c))){ saved = false; profSaveErr++; } }
+    for(const old of profiles.filter(x=>x.kind==='cycle' && x.entryId===e.id && !keepC.has(x.id))) await dropProf(old.id);
+    if(saved && !profMeta.cy[e.id]){
+      profMeta.cy[e.id] = 1;
+      const ck = Object.keys(profMeta.cy); if(ck.length>2000) ck.slice(0,ck.length-2000).forEach(k=>{ delete profMeta.cy[k]; });
+      try{ await store.saveMeta(profMeta); }catch(err){}
+    }
+  }
+  if(parts.goals && saved && !profMeta.gs[e.id]){
+    profMeta.gs[e.id] = 1;
+    const gk = Object.keys(profMeta.gs); if(gk.length>2000) gk.slice(0,gk.length-2000).forEach(k=>{ delete profMeta.gs[k]; });
+    try{ await store.saveMeta(profMeta); }catch(err){}
+  }
+  renderWorld();
+}
+function buildEvents(e, list){
+  const touched = [], keep = new Set();
+  (Array.isArray(list)?list:[]).slice(0,4).forEach(o=>{
+    const title = String((o && o.title)||'').trim().slice(0,80); if(!title) return;
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(o.date||'')) ? o.date : e.date;
+    const id = 'event-'+hash(title.toLowerCase()+'|'+date);
+    const status = String(o.when||'').toLowerCase()==='upcoming' && date>=e.date ? 'upcoming' : 'done';
+    let ev = profiles.find(x=>x.id===id);
+    if(!ev){ ev = {id, kind:'event'}; profiles.push(ev); }
+    Object.assign(ev,{title, date, status, people:(Array.isArray(o.people)?o.people:[]).map(x=>String(x).slice(0,30)).slice(0,4), topic:String(o.topic||'').slice(0,40), entryId:e.id, ts:e.ts, updated:Date.now()});
+    keep.add(id); touched.push(ev);
+  });
+  return {touched, keep};
+}
+async function saveEvents(e, touched, keep, dropStale){
+  let ok = true;
+  for(const ev of touched){ if(!(await saveProf(ev))){ ok = false; profSaveErr++; } }
+  if(dropStale) for(const old of profiles.filter(x=>x.kind==='event' && x.entryId===e.id && !keep.has(x.id))) await dropProf(old.id);
+  return ok;
+}
+async function summarizeBatch(sample, list){
+  for(let i=0;i<list.length;i+=8){
+    if(list.length>8) setProgress(i/list.length);
+    const chunk = list.slice(i,i+8);
+    const items = chunk.map(p=>({name:p.name,kind:p.kind,role:p.relation||p.category,feeling:p.feeling||'',previousSummary:p.summary||'',threads:p.threads||[],events:(p.events||[]).slice(-12).map(x=>x.date+': '+x.text+(x.score?' (entry mood '+x.score+'/5)':''))}));
+    try{
+      const sr = await sample.json(
+`You are a thoughtful analyst keeping a private profile for each person and topic in someone's journal. For each item write "summary": 2 to 3 short sentences in second person ("you") saying who or what this is in the writer's life, plus any pattern or trend visible in the event log (how often it comes up, how it has changed, the writer's mood around it). For goals, say what the goal is, what she has actually done toward it so far, and what seems to be holding it up or next. For topics, also say what still seems open or unresolved and which sub-themes keep recurring. Use only the events given. No guessing, no diagnosing, no advice.
+Return ONLY JSON: {"items":[{"name":"exact name from input","summary":"..."}]}
+
+Items: ${JSON.stringify(items)}`);
+      (sr && Array.isArray(sr.items) ? sr.items : []).forEach(it=>{
+        const p = chunk.find(x=>x.name.toLowerCase()===String(it.name||'').toLowerCase());
+        if(p && it.summary) p.summary = String(it.summary).slice(0,500);
+      });
+    }catch(err){}
+    for(const p of chunk) await saveProf(p);
+  }
+}
+async function finishRescan(){
+  const rs = rescan; rescan = null;
+  const label = rs.kind==='person' ? 'people' : rs.kind==='goal' ? 'goals' : 'topics';
+  if(rs.errors || profSaveErr) return "rescan of "+label+" hit problems, so nothing was removed. tap rescan to try again.";
+  for(const p of profiles.filter(x=>x.kind===rs.kind).slice()){
+    const evs = p.events||[];
+    const keepEv = evs.filter(ev=>!rs.entries.has(ev.entryId) || rs.pairs.has(p.id+'|'+ev.entryId));
+    if(keepEv.length===evs.length) continue;
+    if(!keepEv.length){ await dropProf(p.id); continue; }
+    p.events = keepEv; p.updated = Date.now(); await saveProf(p);
+  }
+  const sample = await getSample();
+  if(sample){ worldStatus('writing fresh '+label+' summaries…'); await summarizeBatch(sample, profiles.filter(x=>x.kind===rs.kind)); }
+  if(rs.kind==='goal'){ profMeta.gl = 1; try{ await store.saveMeta(profMeta); }catch(err){} }
+  renderWorld();
+  return 'rescanned '+rs.entries.size+(rs.entries.size===1?' entry':' entries')+' for '+label+'.';
+}
+async function startRescan(kind){
+  if(profBusy || evBusy || rescan){ worldStatus('still busy with something. try again in a moment.'); return; }
+  const list = entries.filter(e=>e.tidy!==false).sort((a,b)=>a.ts-b.ts);
+  if(!list.length){ worldStatus('no entries to read yet.'); return; }
+  if(kind==='event'){
+    list.forEach(e=>{ delete profMeta.ev[e.id]; });
+    Object.keys(evTries).forEach(k=>{ delete evTries[k]; });
+    try{ await store.saveMeta(profMeta); }catch(err){}
+    runEventBackfill(true);
+    return;
+  }
+  rescan = {kind, pairs:new Set(), entries:new Set(), errors:0};
+  list.forEach(e=>updateProfiles(e, {rescan:true, parts:{people:kind==='person', topics:kind==='topic', events:false, goals:kind==='goal'}}));
+}
+let evBusy = false;
+const evTries = {};
+async function runEventBackfill(replace){
+  if(evBusy) return;
+  evBusy = true;
+  let shown = false;
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  try{
+    while(profBusy || profQueue.length || chatBusy) await sleep(1500);
+    const todo = entries.filter(e=>e.tidy!==false && !profMeta.ev[e.id] && (evTries[e.id]||0)<2).sort((a,b)=>a.ts-b.ts);
+    if(!todo.length) return;
+    const sample = await getSample(); if(!sample) return;
+    for(let i=0;i<todo.length;i+=5){
+      while(profBusy || profQueue.length || chatBusy) await sleep(1500);
+      const batch = todo.slice(i,i+5);
+      batch.forEach(e=>{ evTries[e.id] = (evTries[e.id]||0)+1; });
+      shown = true; worldStatus('finding events… '+Math.min(i+5,todo.length)+' of '+todo.length); setProgress(i/todo.length);
+      const items = batch.map((e,n)=>({n, date:e.date, weekday:new Date(e.date+'T00:00:00').toLocaleDateString('en',{weekday:'long'}), text:((e.source==='chat' ? userTextOf(e.raw) : e.raw)||'').slice(0,1200)}));
+      const prompt =
+`You find specific events in journal entries written by one person (the "I" in each entry).
+For each entry list the concrete things that happened or are planned, past or upcoming: a meeting, a call, a date, a message from someone, an argument, a decision, an outing, a workout, a purchase, a deadline, a trip, a doctor visit, a work milestone, something she did or finished. When in doubt, include it, but merge related moments into one. One event per real-world occurrence: if several things happened as part of the same situation or night (an argument, what was said, a decision made, staying out, how it ended), merge them into ONE event with a title that covers it, never several. Decisions and feelings that come out of an event belong inside it, not as separate events. Never list the same thing twice under different wording or different topics. Pick the single best topic. Usually 1 to 3 events per entry, 4 at most. Not pure feelings. Use only what the entry says.
+Return ONLY JSON: {"events":[{"n":0,"title":"short title","date":"YYYY-MM-DD if stated or clearly implied (resolve words like tomorrow or Friday using that entry's date and weekday), else empty","when":"past or upcoming","people":["names"],"topic":"related topic or empty"}]}
+where "n" is the entry number below.
+
+Entries: ${JSON.stringify(items)}`;
+      let r; try{ r = await sample.json(prompt, {modelTier:'complex'}); }catch(err){ continue; }
+      if(!r || !Array.isArray(r.events)) continue;
+      let ok = true;
+      for(const e of batch){
+        const n = batch.indexOf(e);
+        const mine = r.events.filter(o=>o && Number(o.n)===n);
+        const {touched, keep} = buildEvents(e, mine);
+        profFoundE += touched.length;
+        if(!(await saveEvents(e, touched, keep, !!replace))) ok = false;
+        if(ok) profMeta.ev[e.id] = 1;
+      }
+      const keys = Object.keys(profMeta.ev);
+      if(keys.length>2000) keys.slice(0,keys.length-2000).forEach(k=>{ delete profMeta.ev[k]; });
+      try{ await store.saveMeta(profMeta); }catch(err){}
+      setProgress(Math.min(i+5,todo.length)/todo.length);
+      renderWorld();
+      await sleep(300);
+    }
+  }finally{
+    evBusy = false; if(shown){ worldStatus(''); hideProgress(); } renderWorld();
+  }
+}
+function hash(str){ let h = 5381; for(let i=0;i<str.length;i++) h = ((h<<5)+h+str.charCodeAt(i))|0; return (h>>>0).toString(36); }
+function profStats(p){
+  const ev = p.events||[]; const now = Date.now();
+  const recent = ev.filter(x=>now-x.ts < 14*864e5).length;
+  const sc = ev.map(x=>x.score).filter(v=>typeof v==='number');
+  const avg = sc.length ? sc.reduce((a,b)=>a+b,0)/sc.length : null;
+  return {n:ev.length, recent, avg, last: ev.length ? ev[ev.length-1].ts : 0};
+}
+function ago(ts){ const d = Math.floor((Date.now()-ts)/864e5); return d<=0 ? 'today' : d===1 ? 'yesterday' : d+' days ago'; }
+function shortDate(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+function profCard(p){
+  const st = profStats(p);
+  const det = el('details',{class:'prof'});
+  if(openProfs.has(p.id)) det.open = true;
+  det.addEventListener('toggle',()=>{ det.open ? openProfs.add(p.id) : openProfs.delete(p.id); });
+  const hot = p.kind==='topic' && st.recent>=3;
+  const icon = p.kind==='goal' ? '🎯' : p.kind==='person' ? (p.name.trim()[0]||'?').toUpperCase() : (CAT[p.category]||'✨');
+  const role = p.kind==='person' ? (p.relation||'person') : p.kind==='goal' ? 'goal' : (p.category||'topic');
+  det.append(el('summary',null,
+    el('div',{class:'avatar',text:icon}),
+    el('div',{class:'dtitle'}, el('b',{text:p.name+(hot?' 🔥':'')}), el('span',{text:role+', '+st.n+(p.kind==='goal'?(st.n===1?' update':' updates'):(st.n===1?' mention':' mentions'))+', last '+ago(st.last)})),
+    el('span',{class:'chev','aria-hidden':'true',text:'›'})
+  ));
+  const body = el('div',{class:'profbody'});
+  body.append(el('p',{text:p.summary||'still getting to know this one, more entries will fill it in.'}));
+  const chips = el('div',{class:'chips'});
+  if(p.feeling) chips.append(el('span',{class:'chip',text:'you feel: '+p.feeling}));
+  (p.traits||[]).forEach(t=>chips.append(el('span',{class:'chip',text:t})));
+  if(st.avg!=null) chips.append(el('span',{class:'chip',text:'mood when it comes up: '+MOODS[Math.round(st.avg)]+' '+st.avg.toFixed(1)}));
+  if(st.recent) chips.append(el('span',{class:'chip',text:st.recent+' in the last 2 weeks'}));
+  if(chips.children.length) body.append(chips);
+  if(p.kind==='topic' && (p.threads||[]).length) body.append(el('p',{class:'hint',text:'still open: '+p.threads.join('; ')}));
+  const evs = (p.events||[]).slice().reverse();
+  const li = x => el('li',null,el('b',{text:shortDate(x.date)+': '}),x.text);
+  if(evs.length){
+    body.append(el('ul',{class:'tl'},evs.slice(0,6).map(li)));
+    if(evs.length>6) body.append(el('details',{class:'raw'},el('summary',{text:'older ('+(evs.length-6)+')'}),el('ul',{class:'tl'},evs.slice(6).map(li))));
+  }
+  const acts = el('div',{class:'acts'});
+  if(renaming.has(p.id)){
+    const inp = el('input',{type:'text',value:p.name,'aria-label':'New name',style:'flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 10px'});
+    acts.append(inp,
+      el('button',{class:'primary tiny',text:'save',onclick:async()=>{
+        const n = inp.value.trim().slice(0,40); renaming.delete(p.id);
+        if(n && n!==p.name){ const old = p.name; p.name = n; p.aliases = [...new Set([...(p.aliases||[]), old])].slice(0,6); p.updated = Date.now(); await saveProf(p); }
+        renderWorld();
+      }}),
+      el('button',{class:'ghost tiny',text:'cancel',onclick:()=>{ renaming.delete(p.id); renderWorld(); }})
+    );
+  }else if(merging.has(p.id)){
+    const others = profiles.filter(x=>x.kind===p.kind && x.id!==p.id).sort((a,b)=>a.name.localeCompare(b.name));
+    const sel = el('select',{'aria-label':'Profile to fold into this one'}, el('option',{value:'',text:'pick the duplicate…'}), ...others.map(x=>el('option',{value:x.id,text:x.name})));
+    const go = el('button',{class:'primary tiny',text:'merge into '+p.name});
+    go.addEventListener('click',async()=>{ const o = profiles.find(x=>x.id===sel.value); if(!o) return; merging.delete(p.id); worldStatus('merging '+o.name+' into '+p.name+'…'); await mergeProf(p,o); worldStatus('merged '+o.name+' into '+p.name+'.'); renderWorld(); });
+    acts.append(sel, go, el('button',{class:'ghost tiny',text:'cancel',onclick:()=>{ merging.delete(p.id); renderWorld(); }}));
+  }else{
+    if(TTS) acts.append(ttsBtn('🔊 listen','p-'+p.id,()=>p.name+'. '+(p.summary||'')));
+    acts.append(el('button',{class:'ghost tiny',text:'rename',onclick:()=>{ renaming.add(p.id); renderWorld(); }}));
+    acts.append(el('button',{class:'ghost tiny',text:'merge',onclick:()=>{ merging.add(p.id); renderWorld(); }}));
+    const armed = armedDel===p.id;
+    acts.append(el('button',{class:'ghost tiny',text:armed?'tap again to delete':'delete',onclick:async()=>{
+      if(armedDel!==p.id){ armedDel = p.id; renderWorld(); setTimeout(()=>{ if(armedDel===p.id){ armedDel = null; renderWorld(); } }, 4000); return; }
+      armedDel = null;
+      await dropProf(p.id);
+      renderWorld();
+    }}));
+  }
+  body.append(acts);
+  det.append(body);
+  return det;
+}
+function evCard(ev){
+  const wrap = el('div',{class:'evt'});
+  const [y,m,d] = ev.date.split('-').map(Number);
+  wrap.append(el('div',{class:'when',text:new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})}));
+  const b = el('div',{class:'body'}, el('b',{text:ev.title}));
+  const chips = el('div',{class:'chips'});
+  if(ev.status==='upcoming' && ev.date>=todayStr()) chips.append(el('span',{class:'chip',text:'upcoming'}));
+  (ev.people||[]).forEach(n=>chips.append(el('span',{class:'chip',text:n})));
+  if(ev.topic) chips.append(el('span',{class:'chip',text:'#'+ev.topic}));
+  if(chips.children.length) b.append(chips);
+  wrap.append(b);
+  const x = el('button',{class:'ghost tiny','aria-label':'Remove this event',text:'×'});
+  tapConfirm(x,'sure?',async()=>{ await dropProf(ev.id); renderWorld(); });
+  wrap.append(x);
+  return wrap;
+}
+function renderEvents(){
+  const box = $('#events'); if(!box) return;
+  const today = todayStr();
+  const all = profiles.filter(p=>p.kind==='event' && p.date);
+  const up = all.filter(e=>e.status==='upcoming' && e.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
+  const past = all.filter(e=>!up.includes(e)).sort((a,b)=>b.date.localeCompare(a.date) || (b.ts||0)-(a.ts||0));
+  const kids = [];
+  if(up.length) kids.push(el('p',{class:'hint',text:'coming up'}), ...up.map(evCard));
+  if(past.length){
+    kids.push(el('p',{class:'hint',text:up.length?'happened':'happened lately'}), ...past.slice(0,12).map(evCard));
+    if(past.length>12) kids.push(el('details',{class:'raw'},el('summary',{text:'older ('+(past.length-12)+')'}),...past.slice(12).map(evCard)));
+  }
+  if(!kids.length) kids.push(el('p',{class:'hint',text:'no events yet. meetings, trips, plans and big moments you mention will line up here.'}));
+  box.replaceChildren(...kids);
+  const c = $('#sc-events'); if(c) c.textContent = 'events ('+all.length+')';
+}
+function initSections(){
+  let st = {}; try{ st = JSON.parse(localStorage.getItem('journal-sec')||'{}'); }catch(e){}
+  document.querySelectorAll('details.sec').forEach(d=>{
+    const k = d.dataset.sec; if(st[k]===false) d.open = false;
+    d.addEventListener('toggle',()=>{ st[k] = d.open; try{ localStorage.setItem('journal-sec', JSON.stringify(st)); }catch(e){} });
+  });
+}
+function cycleModel(){
+  const cy = profiles.filter(p=>p.kind==='cycle' && /^\d{4}-\d{2}-\d{2}$/.test(p.date||''));
+  const starts = [...new Set(cy.filter(c=>c.type==='start').map(c=>c.date))].sort();
+  const ends = [...new Set(cy.filter(c=>c.type==='end').map(c=>c.date))].sort();
+  if(!starts.length && !ends.length) return null;
+  const gapsOf = list => { const g = []; for(let i=1;i<list.length;i++){ const d = dayNum(list[i])-dayNum(list[i-1]); if(d>=18 && d<=50) g.push(d); } return g; };
+  let gaps = gapsOf(starts); if(!gaps.length) gaps = gapsOf(ends);
+  const L = gaps.length ? Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length) : 28;
+  const pls = []; starts.forEach(st=>{ const en = ends.find(x=>x>=st && dayNum(x)-dayNum(st)<10); if(en){ const d = dayNum(en)-dayNum(st)+1; if(d>=2) pls.push(d); } });
+  const PL = Math.min(8, Math.max(3, pls.length ? Math.round(pls.reduce((a,b)=>a+b,0)/pls.length) : 5));
+  // every period gets an end date: real if logged, otherwise guessed from its start
+  const allEnds = new Set(ends);
+  starts.forEach(st=>{ if(!ends.some(x=>x>=st && dayNum(x)-dayNum(st)<10)) allEnds.add(addDays(st,PL-1)); });
+  const endList = [...allEnds].sort();
+  const phaseOf = n => { if(n<=0) return 'period'; const d = n+PL; return d>=L-15 && d<=L-13 ? 'mid' : d<L-15 ? 'after' : 'pre'; };
+  // n = days since the period ended (the end day itself is day 0); null when unknown
+  const dayOn = ds => {
+    const ls = starts.filter(x=>x<=ds).pop();
+    if(ls && !ends.some(x=>x>=ls && x<=ds) && dayNum(ds)-dayNum(ls)<PL+2) return {n:dayNum(ds)-dayNum(ls)+1-PL, ongoing:true, k:dayNum(ds)-dayNum(ls)+1};
+    const le = endList.filter(x=>x<=ds).pop();
+    if(!le) return null;
+    const n = dayNum(ds)-dayNum(le);
+    return n<=60 ? {n, ongoing:false} : null;
+  };
+  return {L, PL, starts, ends, phaseOf, dayOn};
+}
+const PHASE_LABEL = {period:'period', after:'after period', mid:'mid-cycle', pre:'pre-period'};
+function cycleToday(){
+  const m = cycleModel(); if(!m) return null;
+  const t = m.dayOn(todayStr()); if(!t) return null;
+  const ph = t.ongoing ? 'period' : m.phaseOf(t.n);
+  const sc = entries.filter(e=>e.tidy!==false && typeof e.score==='number').map(e=>{ const x = m.dayOn(e.date); return x ? {ph:x.ongoing?'period':m.phaseOf(x.n), v:e.score} : null; }).filter(x=>x && x.ph===ph).map(x=>x.v);
+  const avg = sc.length ? sc.reduce((a,b)=>a+b,0)/sc.length : null;
+  return {day:t.ongoing?t.k:t.n, ongoing:t.ongoing, ph, avg, n:sc.length};
+}
+function allWins(){
+  const out = [];
+  entries.filter(e=>e.tidy!==false && e.wins && e.wins.length).sort((a,b)=>b.ts-a.ts).forEach(e=>e.wins.forEach(w=>out.push({date:e.date, ts:e.ts, text:w})));
+  return out;
+}
+function renderWins(){
+  const bar = $('#winbar'); if(bar){
+    const ws = allWins(); const t = todayStr();
+    const today = ws.filter(w=>w.date===t);
+    const w = today[0] || ws[0];
+    if(!w){ bar.hidden = true; }
+    else{ bar.hidden = false; $('#win1').textContent = w.date===t ? "✨ today's win" : '✨ latest win · '+prettyDate(w.date); $('#win2').textContent = w.text; }
+  }
+  const gl = $('#goodlist'); if(!gl) return;
+  const ws = allWins();
+  $('#sc-good').textContent = 'good things ('+ws.length+')';
+  const li = w => el('li',null, el('span',{class:'chip',text:(()=>{ const [y,m,d] = w.date.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString(undefined,{day:'numeric',month:'short'}); })()}), ' '+w.text);
+  gl.replaceChildren(ws.length ? el('div',null, el('ul',{class:'tl'},ws.slice(0,12).map(li)), ws.length>12 ? el('details',{class:'raw'},el('summary',{text:'older ('+(ws.length-12)+')'}),el('ul',{class:'tl'},ws.slice(12).map(li))) : null) : el('p',{class:'hint',text:'your wins, proud moments and things you are looking forward to will collect here.'}));
+}
+function renderCycle(){
+  const bar = $('#cyclebar'); if(!bar) return;
+  const c = cycleToday();
+  if(!c){ bar.hidden = true; return; }
+  bar.hidden = false;
+  $('#cyc1').textContent = '🌸 '+(c.ongoing ? 'period · day '+c.day : 'day '+c.day+' · '+PHASE_LABEL[c.ph]);
+  $('#cyc2').textContent = c.n>=3 ? 'mood '+(c.avg>=3.8?'usually runs good':c.avg>=3.2?'is usually okay':'tends to dip')+' around now ('+MOODS[Math.round(c.avg)]+' '+c.avg.toFixed(1)+' across '+c.n+' entries)' : 'not enough entries from this part of your cycle yet to say how your mood runs';
+}
+function renderWorld(){
+  renderCycle(); renderWins();
+  const pe = $('#people'), tp = $('#topics'), gl = $('#goals'); if(!pe || !tp || !gl) return;
+  const goals = profiles.filter(p=>p.kind==='goal').sort((a,b)=>{ const x=profStats(a), y=profStats(b); return y.last-x.last; });
+  gl.replaceChildren(...(goals.length ? goals.map(profCard) : [el('p',{class:'hint',text:'no goals yet. what you are working toward will show up here, with what you have done about it.'})]));
+  $('#sc-goals').textContent = 'goals ('+goals.length+')';
+  const people = profiles.filter(p=>p.kind==='person').sort((a,b)=>{ const x=profStats(a), y=profStats(b); return y.n-x.n || y.last-x.last; });
+  const topics = profiles.filter(p=>p.kind==='topic').sort((a,b)=>{ const x=profStats(a), y=profStats(b); return y.recent-x.recent || y.n-x.n; });
+  const none = t => [el('p',{class:'hint',text:t})];
+  pe.replaceChildren(...(people.length ? people.map(profCard) : none('nobody yet. people you talk about get a running profile here.')));
+  tp.replaceChildren(...(topics.length ? topics.map(profCard) : none('no topics yet. work, home, workouts and the like will collect here, hottest first.')));
+  $('#sc-people').textContent = 'people ('+people.length+')';
+  $('#sc-topics').textContent = 'trending topics ('+topics.length+')';
+  renderEvents();
+}
+async function unprofileEntry(id){
+  const qi = profQueue.findIndex(x=>x.id===id); if(qi>=0) profQueue.splice(qi,1);
+  const changed = [];
+  for(const p of profiles.slice()){
+    if(p.kind==='event' || p.kind==='cycle'){ if(p.entryId===id) await dropProf(p.id); continue; }
+    const before = (p.events||[]).length;
+    p.events = (p.events||[]).filter(x=>x.entryId!==id);
+    if(p.events.length===before) continue;
+    if(!p.events.length){
+      await dropProf(p.id);
+    }else{ p.updated = Date.now(); changed.push(p); }
+  }
+  if(profMeta.done[id]!=null || profMeta.ev[id]){
+    delete profMeta.done[id]; delete profMeta.ev[id];
+    try{ await store.saveMeta(profMeta); }catch(e){}
+  }
+  renderWorld();
+  if(!changed.length) return;
+  const sample = await getSample();
+  if(sample){
+    try{
+      const items = changed.map(p=>({name:p.name,kind:p.kind,role:p.relation||p.category,feeling:p.feeling||'',events:p.events.slice(-12).map(x=>x.date+': '+x.text+(x.score?' (entry mood '+x.score+'/5)':''))}));
+      const sr = await sample.json(
+`You are a thoughtful analyst keeping a private profile for each person and topic in someone's journal. An entry was deleted, so rewrite each summary from the remaining events only. For each item write "summary": 2 to 3 short sentences in second person ("you") saying who or what this is in the writer's life, plus any pattern or trend visible in the events. Use only the events given. No guessing, no diagnosing, no advice.
+Return ONLY JSON: {"items":[{"name":"exact name from input","summary":"..."}]}
+
+Items: ${JSON.stringify(items)}`);
+      (sr && Array.isArray(sr.items) ? sr.items : []).forEach(it=>{
+        const p = changed.find(x=>x.name.toLowerCase()===String(it.name||'').toLowerCase());
+        if(p && it.summary) p.summary = String(it.summary).slice(0,500);
+      });
+    }catch(err){}
+  }
+  for(const p of changed) await saveProf(p);
+  renderWorld();
+}
+const profTries = {};
+let catchTimer = null;
+const goalTries = {};
+let rescoring = false;
+async function rescoreAll(){
+  if(rescoring || chatBusy || !store) return;
+  const sample = await getSample(); if(!sample) return;
+  const list = entries.filter(e=>e.tidy!==false && (!e.scoreSet || e.wins===undefined)).sort((a,b)=>b.ts-a.ts);
+  const st = $('#rescorestatus');
+  if(!list.length){ if(st) st.textContent = 'nothing to re-score'; return; }
+  rescoring = true; let done = 0, changed = 0, failed = false;
+  for(let i=0;i<list.length;i+=8){
+    const chunk = list.slice(i,i+8);
+    const items = chunk.map((e,k)=>({n:k, title:e.title, bullets:(e.bullets||[]).filter(b=>!String(b).startsWith('💬')).slice(0,8), raw:String(e.raw||'').slice(0,500)}));
+    const prompt = `Score the mood of each journal entry from 1 to 5 (1 = awful, 2 = low or stressed, 3 = rare, truly flat, 4 = good, 5 = great). Judge only by how the writer sounds about her own day. Use the full range and never pick 3 to be safe. ${POS_RULE}
+Also list up to 3 short first-person "wins" for each entry: good things that happened, things she did well or is proud of, or things she is looking forward to, taken only from what she wrote (empty list if none, never invent). Return ONLY JSON: {"scores":[{"n":0,"score":4,"mood":"one or two words","wins":["..."]}]}, one item per entry.
+Entries: ${JSON.stringify(items)}`;
+    try{
+      const r = await sample.json(prompt, {modelTier:'complex'});
+      for(const o of (Array.isArray(r.scores)?r.scores:[])){
+        const e = chunk[Number(o.n)]; const sc = Math.round(Number(o.score));
+        if(!e) continue;
+        const wins = Array.isArray(o.wins) ? o.wins.map(w=>String(w).trim().slice(0,140)).filter(Boolean).slice(0,3) : (e.wins||[]);
+        const useSc = !e.scoreSet && sc>=1 && sc<=5;
+        if((!useSc || sc===e.score) && e.wins!==undefined) continue;
+        try{ await store.save({...e, score:useSc?sc:e.score, mood:useSc?String(o.mood||e.mood||'').slice(0,24):e.mood, wins}); changed++; }catch(err){}
+      }
+    }catch(err){ failed = true; break; }
+    done += chunk.length;
+    if(st) st.textContent = 'rescoring… '+done+'/'+list.length;
+  }
+  rescoring = false;
+  if(st) st.textContent = failed ? 'stopped early, try again later' : 'done, '+changed+' scores changed';
+  if(!failed){ try{ localStorage.setItem('journal-rescore-v3','1'); }catch(err){} }
+  render();
+}
+const POS_RULE = 'Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.';
+function scheduleCatchUp(){
+  clearTimeout(catchTimer);
+  catchTimer = setTimeout(()=>{
+    if(!store) return;
+    let rs = null; try{ rs = localStorage.getItem('journal-rescore-v3'); }catch(err){}
+    if(!rs && entries.length && !rescoring && !chatBusy){ rescoreAll(); }
+    if(profBusy){ runEventBackfill(); return; }
+    const todo = entries
+      .filter(e=>e.tidy!==false && (profMeta.done[e.id]||0)<PROFILE_V && (profTries[e.id]||0)<2 && !profQueue.some(q=>q.id===e.id))
+      .sort((a,b)=>a.ts-b.ts);
+    todo.forEach(e=>{ profTries[e.id] = (profTries[e.id]||0)+1; updateProfiles(e); });
+    const gtodo = entries.filter(e=>e.tidy!==false && (!profMeta.gs[e.id] || !profMeta.cy[e.id]) && (goalTries[e.id]||0)<2 && !profQueue.some(q=>q.id===e.id)).sort((a,b)=>a.ts-b.ts);
+    if(!todo.length && gtodo.length && !rescan){ gtodo.forEach(e=>{ goalTries[e.id] = (goalTries[e.id]||0)+1; updateProfiles(e, {parts:{goals:!profMeta.gs[e.id], cycle:!profMeta.cy[e.id]}}); }); return; }
+    runEventBackfill();
+  }, 2500);
+}
+
+let shotLimits = null;
+async function initShots(){
+  const sample = await getSample(); if(!sample || !sample.limits) return;
+  try{
+    const l = await sample.limits();
+    if(!l || !l.images) return;
+    shotLimits = l.images;
+    $('#shotin').accept = l.images.mediaTypes.join(',');
+    $('#shotbtn').hidden = false; $('#shothint').hidden = false;
+  }catch(e){}
+}
+async function sendShots(files){
+  if(chatBusy || !files.length) return;
+  const sample = await getSample(); if(!sample) return;
+  const list = files.slice(0, shotLimits ? shotLimits.maxCount : 3);
+  const ta = $('#chatin'); const caption = ta.value.trim(); ta.value = '';
+  if(!chat.length && !chatTimeTouched){ $('#chatdate').value = todayStr(); $('#chattime').value = nowTime(); }
+  chatBusy = true; streamText = 'reading your screenshots…';
+  $('#chatsend').disabled = true; $('#shotbtn').disabled = true; renderChat();
+  clearTimeout(saveTimer);
+  const recap = chat.slice(-6).map(m=>(m.role==='user'?'Her: ':'You: ')+m.content).join('\n');
+  const prompt =
+CHAT_RULES+chatContext()+`
+
+She just shared ${list.length} screenshot${list.length===1?'':'s'} of a chat conversation (in order). ${caption?'Her note with them: "'+caption+'"':''}
+${recap?'Your chat with her so far:\n'+recap:''}
+
+Do two things:
+1) "transcript": read the screenshots and write out the conversation as plain text in order, one line per message. Use "Her:" for the messages she sent (usually the right-hand or colored bubbles) and "Them:" for the other person. ALWAYS look for the other person's name (contact name at the top of the chat, a header, or a name used in the messages) and, if you find one, write that name instead of "Them:" on every line and put a first line "Other person: <name>". Never invent a name. Keep dates or times if visible, skip phone status bars and app buttons. If you cannot tell who sent a line, say so on that line. Copy the words as written; do not fix or guess unreadable text, write [unreadable] instead.
+2) "reaction": reply to her as her best friend and JUDGE how the conversation went, in 3 to 6 short sentences: the other person's energy and effort, what she did well or fumbled, mixed signals, honest green or red flags, and your real take. Use only what is visible, do not invent context, and do not tell her what to do unless she asked. No questions unless one is genuinely needed.
+Return ONLY JSON: {"transcript":"...","reaction":"..."}`;
+  try{
+    const r = await sample.json(prompt, {images:list, model:'claude-opus-5-5', modelTier:'complex'});
+    const reaction = String((r && r.reaction)||'').trim();
+    if(!reaction) throw {code:'empty'};
+    chat.push({role:'user', content:'📎 shared '+list.length+(list.length===1?' screenshot':' screenshots')+(caption?': '+caption:''), shot:String((r && r.transcript)||'').slice(0,6000)});
+    chat.push({role:'assistant', content:reaction});
+    persistChat();
+    $('#chatstatus').textContent = 'read them. the screenshots themselves were not saved, only the text above.';
+  }catch(e){
+    ta.value = caption;
+    $('#chatstatus').textContent = (e && e.code==='image_rejected') ? "couldn't read that image. try a png or jpg screenshot." : "couldn't read the screenshots right now, try again.";
+  }
+  streamText = null; chatBusy = false; $('#chatsend').disabled = false; $('#shotbtn').disabled = false; renderChat();
+  saveTimer = setTimeout(()=>{ if(chatBusy) return; maybeSaveChat(); }, 60000);
+}
+
+function render(){
+  const days = groupByDay();
+  renderStats(days); renderChart(days); renderLog(days); renderWorld();
+}
+
+
+function dayPicker(inp){
+  const row = el('div',{class:'modes',role:'group','aria-label':'Pick a day',style:'margin:0 0 6px;flex-wrap:wrap'});
+  inp.parentNode.parentNode.insertBefore(row, inp.parentNode);
+  const build = () => {
+    row.replaceChildren();
+    const t = todayStr(), dow = new Date().getDay(), start = addDays(t,-dow);
+    for(let k=0;k<=dow;k++){
+      const ds = addDays(start,k), [yy,mm,dd] = ds.split('-').map(Number);
+      const lab = ds===t ? 'today' : new Date(yy,mm-1,dd).toLocaleDateString(undefined,{weekday:'short'});
+      row.append(el('button',{class:'mode',type:'button','data-d':ds,text:lab,onclick:()=>{ inp.value = ds; open = false; inp.style.display='none'; inp.dispatchEvent(new Event('change')); sync(); }}));
+    }
+    row.append(el('button',{class:'mode',type:'button','data-d':'older',text:'older…',onclick:()=>{ open = true; inp.style.display=''; sync(); try{ inp.focus(); inp.showPicker&&inp.showPicker(); }catch(e){} }}));
+  };
+  let lastV = null, lastT = null, open = false;
+  const sync = () => {
+    if(lastT!==todayStr()){ lastT = todayStr(); build(); }
+    const v = inp.value || todayStr();
+    const inWeek = !!row.querySelector('[data-d="'+v+'"]');
+    if(!inWeek && inp.style.display==='none') inp.style.display='';
+    if(inWeek && !open && inp.style.display!=='none') inp.style.display='none';
+    row.querySelectorAll('[data-d]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.d===v || (b.dataset.d==='older' && (!inWeek||open)))));
+    lastV = v;
+  };
+  inp.style.display='none'; sync();
+  inp.addEventListener('change',sync); inp.addEventListener('input',sync);
+  setInterval(sync,600);
+}
+$('#date').value = todayStr();
+dayPicker($('#date')); dayPicker($('#chatdate'));
+$('#time').value = nowTime();
+$('#save').addEventListener('click', saveEntry);
+tapConfirm($('#rescore'),'tap again to re-score everything',()=>rescoreAll());
+$('#ranges').addEventListener('click',ev=>{ const b = ev.target.closest('[data-r]'); if(!b) return; range = b.dataset.r; try{ localStorage.setItem('journal-range', range); }catch(e){} render(); });
+$('#mode-chat').addEventListener('click',()=>setMode('chat'));
+$('#mode-entry').addEventListener('click',()=>setMode('entry'));
+applyView();
+$('#tab-chat').addEventListener('click',()=>setTab('chat'));
+$('#tab-world').addEventListener('click',()=>setTab('world'));
+$('#chatdate').value = todayStr();
+$('#chattime').value = nowTime();
+$('#chatdate').addEventListener('change',()=>{ chatTimeTouched = true; });
+$('#chattime').addEventListener('change',()=>{ chatTimeTouched = true; });
+tapConfirm($('#memclear'),'tap again to forget all',async()=>{ if(!memoryItems.length) return; memoryItems=[]; renderMem(); try{ await store.saveMemory([]); }catch(e){} });
+initTTS();
+initSections();
+initShots();
+tapConfirm($('#rescan-goal'),'tap again to re-read all entries',()=>startRescan('goal'));
+tapConfirm($('#rescan-person'),'tap again to re-read all entries',()=>startRescan('person'));
+tapConfirm($('#rescan-topic'),'tap again to re-read all entries',()=>startRescan('topic'));
+tapConfirm($('#rescan-event'),'tap again to re-read all entries',()=>startRescan('event'));
+$('#shotbtn').addEventListener('click',()=>$('#shotin').click());
+$('#shotin').addEventListener('change',ev=>{ const arr = Array.from(ev.target.files||[]); ev.target.value = ''; sendShots(arr); });
+$('#chatsend').addEventListener('click', sendChat);
+$('#chatsave').addEventListener('click', saveChat);
+tapConfirm($('#chatclear'),'tap again to start over',()=>{ if(chatBusy) return; archiveChat(); chat=[]; chatEntryId=null; chatTimeTouched=false; $('#chatdate').value=todayStr(); $('#chattime').value=nowTime(); persistChat(); renderChat(); });
+$('#chatin').addEventListener('keydown',ev=>{ if(ev.key==='Enter' && !ev.shiftKey && !ev.isComposing){ ev.preventDefault(); sendChat(); } });
+renderChat();
+$('#analyze').addEventListener('click', analyze);
+render();
+initStore();
+</script>
+</body>
+</html>
