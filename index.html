@@ -813,7 +813,7 @@ function applyView(){
   $('#panel-journal').hidden = !(curTab==='chat' && curMode==='entry');
   $('#panel-world').hidden = curTab!=='world';
   $('#panel-habits').hidden = curTab!=='habits';
-  $('#journalbelow').hidden = curTab!=='chat';
+  $('#journalbelow').hidden = !(curTab==='chat' && curMode==='entry');
   $('#tab-habits').setAttribute('aria-selected', String(curTab==='habits'));
   $('#modes').hidden = curTab!=='chat';
   $('#tab-chat').setAttribute('aria-selected', String(curTab==='chat'));
