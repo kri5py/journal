@@ -145,17 +145,15 @@ details[open]>summary .chev{transform:rotate(90deg)}
 .hcell[data-s="m"]{border-color:var(--soft);color:var(--soft)}
 .hcell.today{outline:2px solid var(--berry);outline-offset:1px}
 .hcell:disabled{opacity:.3;cursor:default}
-.hrgrid{display:grid;grid-template-columns:34px repeat(7,minmax(0,1fr));gap:2px;align-items:center}
-.hrgrid .hd{font-size:.68rem;color:var(--soft);text-align:center}
+.hrgrid{display:grid;grid-template-columns:38px repeat(5,minmax(0,1fr));grid-auto-rows:22px;gap:2px;align-items:stretch}
+.hrgrid .hd{font-size:.66rem;color:var(--soft);text-align:center;grid-row:1}
 .hrgrid .hd.today{color:var(--berry);font-weight:700}
-.hrgrid .hl{font-size:.62rem;color:var(--soft);text-align:right;padding-right:4px}
-.hblk{height:15px;border-radius:4px;padding:0;margin:0;border:0;background:var(--blush);opacity:.45;box-shadow:none;min-width:0}
-.hblk[data-c]{opacity:1}
-.hblk[data-c="sleep"]{background:#7a5a9a}.hblk[data-c="work"]{background:#d9739f}.hblk[data-c="body"]{background:#e58a6b}
-.hblk[data-c="social"]{background:#ff8fb8}.hblk[data-c="food"]{background:#c9a24a}.hblk[data-c="chill"]{background:#6f9fb5}.hblk[data-c="other"]{background:#a07888}
-.hblk.sel{outline:2px solid var(--berry);outline-offset:1px}
+.hrgrid .hl{font-size:.62rem;color:var(--soft);text-align:right;padding:0 4px 0 0;background:transparent;border:0;box-shadow:none;margin:0;border-top:1px solid var(--line);border-radius:0}
+.hev{border-radius:5px;padding:1px 3px;margin:0;border:0;box-shadow:none;font-size:.6rem;line-height:1.05;color:#fff;text-align:left;overflow:hidden;min-width:0;background:#8a6475;font-weight:500}
+.hev[data-c="sleep"]{background:#7a5a9a}.hev[data-c="work"]{background:#c4608d}.hev[data-c="body"]{background:#d97a5a}
+.hev[data-c="social"]{background:#e0679a}.hev[data-c="food"]{background:#a98532}.hev[data-c="chill"]{background:#4f88a1}
 .hlegend{display:flex;flex-wrap:wrap;gap:4px 10px;margin:8px 0 0;font-size:.68rem;color:var(--soft)}
-.hlegend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.hlegend i{margin-right:4px;vertical-align:-1px}
 .hrow{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}
 .hrow input[type=text]{flex:1;min-width:120px}
 </style>
@@ -212,9 +210,9 @@ details[open]>summary .chev{transform:rotate(90deg)}
         <div id="hab-reason"></div>
       </details>
       <details class="sec" data-sec="habhours"><summary class="sub"><span>hour by hour</span><span class="chev" aria-hidden="true">›</span></summary>
-        <div class="row" style="margin:6px 0 8px;justify-content:space-between;align-items:center"><span class="hint" id="hr-range" style="margin:0"></span><button class="ghost tiny" id="hr-sum" type="button">✨ sum up the week</button></div>
+        <div class="row" style="margin:6px 0 8px;justify-content:space-between;align-items:center"><span class="hint" style="margin:0">last 5 days</span><button class="ghost tiny" id="hr-sum" type="button">✨ sum up 7 days</button></div>
         <div id="hr-grid" class="hrgrid"></div>
-        <p class="hint" id="hr-tip" style="margin:8px 0 0">built from what you tell me about your day. tap a block to see what it was.</p>
+        <p class="hint" id="hr-tip" style="margin:8px 0 0">from what you tell me about your day. tap a time to see what you usually do then.</p>
         <div id="hr-trend"></div>
       </details>
       <details class="sec" data-sec="habwhy"><summary class="sub"><span>what gets in the way</span><span class="chev" aria-hidden="true">›</span></summary><div id="hab-why"></div></details>
@@ -332,7 +330,7 @@ async function initStore(){
           memoryItems = m && Array.isArray(m.items) ? m.items : [];
           profiles = mergeProfiles(all.filter(d => d && (d.kind==='person' || d.kind==='topic' || d.kind==='event' || d.kind==='goal' || d.kind==='cycle') && typeof d.id==='string'));
           backupProfiles();
-          habits = normHabits(all.find(d => d && d.id==='habits'));
+          if(!habDirty) habits = normHabits(all.find(d => d && d.id==='habits'));
           if(!habits.seeded && !habits.list.length && all.length){ habits.list = HAB_SEED.map((n,i)=>({id:'h'+(i+1),name:n})); habits.seeded = 1; saveHabitsSoon(); }
           const pm = all.find(d => d && d.id==='profilemeta3');
           profMeta = normMeta(pm && pm.done, pm && pm.ev, pm && pm.gl, pm && pm.gs, pm && pm.cy);
@@ -1589,20 +1587,22 @@ const goalTries = {};
 const HAB_SEED = ['Solve 2 coding questions','Prepare Angular','Prepare React','Go to gym','Burn 50-100 cals','Log weight','Log calories','Take protein','Take a shower','Brush before bed','Journal (20 min)'];
 const HAB_WHY = ['sick','no time','forgot','tired','travelling','didn\'t feel like it'];
 let habits = {list:[], log:{}, reasons:{}, matched:{}, todoSent:{}, seeded:0};
-let hrSel = null, hrBusy = false, hrSumBusy = false, habWeek = 0, habReasonFor = null, habSaveT = null, habMatching = false;
+let habDirty = false, hrSel = null, hrBusy = false, hrSumBusy = false, habWeek = 0, habReasonFor = null, habSaveT = null, habMatching = false;
 function normHabits(d){
   const o = d && typeof d==='object' ? d : {};
   const obj = x => (x && typeof x==='object' && !Array.isArray(x)) ? x : {};
   return {list:(Array.isArray(o.list)?o.list:[]).filter(h=>h && h.id && h.name).map(h=>({id:String(h.id), name:String(h.name).slice(0,60)})), log:obj(o.log), reasons:obj(o.reasons), matched:obj(o.matched), todoSent:obj(o.todoSent), hours:obj(o.hours), hourTrend:obj(o.hourTrend), seeded:o.seeded?1:0};
 }
 function saveHabitsSoon(){
+  habDirty = true;
   clearTimeout(habSaveT);
-  habSaveT = setTimeout(async()=>{
-    if(!store || !store.saveHabits) return;
+  const me = habSaveT = setTimeout(async()=>{
+    if(!store || !store.saveHabits){ habDirty = false; return; }
     const cut = addDays(todayStr(),-200);
     ['log','reasons','matched'].forEach(f=>{ Object.keys(habits[f]).forEach(k=>{ const d = k.includes('|') ? k.split('|')[1] : k; if(d < cut) delete habits[f][k]; }); });
     Object.keys(habits.hours).forEach(k=>{ if(!habits.hours[k] || String(habits.hours[k].d||'') < cut) delete habits.hours[k]; });
-    try{ await (()=>{ const ks = Object.keys(habits.todoSent); if(ks.length>400) ks.sort((a,b)=>habits.todoSent[a]-habits.todoSent[b]).slice(0,ks.length-400).forEach(k=>{ delete habits.todoSent[k]; }); return store.saveHabits({list:habits.list, log:habits.log, reasons:habits.reasons, matched:habits.matched, todoSent:habits.todoSent, hours:habits.hours, hourTrend:habits.hourTrend, seeded:habits.seeded}); })(); }catch(e){}
+    try{ await (()=>{ const ks = Object.keys(habits.todoSent); if(ks.length>400) ks.sort((a,b)=>habits.todoSent[a]-habits.todoSent[b]).slice(0,ks.length-400).forEach(k=>{ delete habits.todoSent[k]; }); return store.saveHabits({list:habits.list, log:habits.log, reasons:habits.reasons, matched:habits.matched, todoSent:habits.todoSent, hours:habits.hours, hourTrend:habits.hourTrend, seeded:habits.seeded}); })(); }catch(e){ const tp = $('#hab-tip'); if(tp) tp.textContent = "couldn't save that just now, it'll retry on your next tap."; }
+    if(habSaveT===me) habDirty = false;
   }, 500);
 }
 const hbHash = str => { let h = 0; for(let i=0;i<str.length;i++) h = (h*31+str.charCodeAt(i))|0; return String(h); };
@@ -1644,7 +1644,7 @@ function renderHabits(){
     });
   });
   grid.replaceChildren(...kids);
-  try{ renderHours(days, t, lab); }catch(err){}
+  try{ renderHours(); }catch(err){}
   if(!visible.length) grid.replaceChildren(el('p',{class:'hint',text:'no habits yet, add some under manage habits.'}));
   // reasons for missed days
   const box = $('#hab-reason'); box.replaceChildren();
@@ -1690,32 +1690,36 @@ function hourItems(ds){
   Object.values(habits.hours).forEach(v=>{ (v && Array.isArray(v.items) ? v.items : []).forEach(it=>{ if(it.date===ds) out.push(it); }); });
   return out;
 }
-function renderHours(days, t, lab){
+function renderHours(){
   const grid = $('#hr-grid'); if(!grid) return;
-  $('#hr-range').textContent = lab(days[0])+' to '+lab(days[6]);
-  const per = days.map(ds=>({ds, items:hourItems(ds)}));
+  const t = todayStr(), days = Array.from({length:5},(_,i)=>addDays(t,i-4));
+  const lab = ds => { const [y,m,d] = ds.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'short',day:'numeric'}); };
+  const fmt = h => (h%12===0?12:h%12)+(h<12?'am':'pm');
   const kids = [el('div',{class:'hd'})];
-  days.forEach(ds=>{ const [y,m,d] = ds.split('-').map(Number); kids.push(el('div',{class:'hd'+(ds===t?' today':''),text:new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'narrow'})})); });
-  const fmt = h => (h%12===0?12:h%12)+(h<12?'a':'p');
+  days.forEach(ds=>kids.push(el('div',{class:'hd'+(ds===t?' today':''),text:lab(ds)})));
   for(let h=0;h<24;h++){
-    kids.push(el('div',{class:'hl',text:h%3===0?fmt(h):''}));
-    per.forEach(({ds,items})=>{
-      const hit = items.filter(it=>h>=it.h && h<=it.to);
-      const b = el('button',{class:'hblk'+(hrSel&&hrSel.ds===ds&&hrSel.h===h?' sel':''),type:'button'});
-      if(hit.length){ b.setAttribute('data-c',hit[0].c); b.title = fmt(h)+': '+hit.map(x=>x.a).join(', '); b.setAttribute('aria-label',lab(ds)+' '+fmt(h)+' '+hit.map(x=>x.a).join(', ')); }
-      else b.setAttribute('aria-label',lab(ds)+' '+fmt(h)+' nothing logged');
-      b.addEventListener('click',()=>{ hrSel = {ds,h}; $('#hr-tip').textContent = lab(ds)+', '+fmt(h)+': '+(hit.length?hit.map(x=>x.a).join(' · '):'nothing logged'); renderHours(days,t,lab); });
+    const lb = el('button',{class:'hl',type:'button',text:fmt(h),style:'grid-row:'+(h+2)+';grid-column:1'});
+    lb.addEventListener('click',()=>{
+      const bits = days.map(ds=>{ const a = hourItems(ds).filter(x=>h>=x.h && h<=x.to).map(x=>x.a); return a.length ? lab(ds)+': '+a.join(', ') : null; }).filter(Boolean);
+      $('#hr-tip').textContent = fmt(h)+' lately: '+(bits.length?bits.join(' · '):'nothing logged yet');
+    });
+    kids.push(lb);
+  }
+  days.forEach((ds,di)=>{
+    const taken = [];
+    hourItems(ds).sort((a,b)=>a.h-b.h||a.to-b.to).forEach(it=>{
+      if(taken.some(x=>it.h<=x.to && it.to>=x.h)) return; taken.push(it);
+      const b = el('button',{class:'hev',type:'button','data-c':it.c,style:'grid-column:'+(di+2)+';grid-row:'+(it.h+2)+' / '+(it.to+3),text:it.a,title:fmt(it.h)+(it.to>it.h?' to '+fmt(it.to+1):'')+': '+it.a});
+      b.addEventListener('click',()=>{ $('#hr-tip').textContent = lab(ds)+', '+fmt(it.h)+(it.to>it.h?' to '+fmt(it.to+1):'')+': '+it.a; });
       kids.push(b);
     });
-  }
+  });
   grid.replaceChildren(...kids);
-  const lg = $('#hr-legend'); 
-  if(!lg){ const d = el('div',{class:'hlegend',id:'hr-legend'}, ...Object.keys(HR_CATS).map(c=>el('span',null, el('i',{style:'background:'+getComputedStyle(document.documentElement).getPropertyValue('--x')}), HR_CATS[c]))); d.querySelectorAll('i').forEach((i,k)=>{ const probe = document.createElement('span'); probe.className='hblk'; probe.setAttribute('data-c',Object.keys(HR_CATS)[k]); probe.style.cssText='position:absolute;visibility:hidden'; document.body.appendChild(probe); i.style.background = getComputedStyle(probe).backgroundColor; probe.remove(); }); grid.after(d); }
-  const logged = per.filter(x=>x.items.length).length;
-  const sb = $('#hr-sum'); if(sb){ sb.disabled = logged<3 || hrSumBusy; sb.title = logged<3 ? 'needs at least 3 days with hours logged this week' : ''; }
-  const tr = habits.hourTrend[days[0]];
-  const box = $('#hr-trend');
-  box.replaceChildren(...(tr && tr.text ? [el('div',{class:'card',style:'margin-top:10px;padding:10px 12px'}, el('div',{class:'hint',style:'margin:0 0 4px',text:'week summary'}), el('ul',null, tr.text.split('\n').filter(Boolean).map(x=>el('li',{text:x.replace(/^[-•*\s]+/,'')}))))] : (logged<3 ? [el('p',{class:'hint',text:'summary unlocks once 3+ days this week have hours ('+logged+' so far).'})] : [])));
+  if(!$('#hr-legend')){ const d = el('div',{class:'hlegend',id:'hr-legend'}, ...Object.keys(HR_CATS).map(c=>el('span',null, el('i',{class:'hev','data-c':c,style:'display:inline-block;width:9px;height:9px;padding:0'}), HR_CATS[c]))); grid.after(d); }
+  const last7 = Array.from({length:7},(_,i)=>addDays(t,i-6)), logged = last7.filter(ds=>hourItems(ds).length).length;
+  const sb = $('#hr-sum'); if(sb){ sb.disabled = logged<3 || hrSumBusy; }
+  const tr = habits.hourTrend[last7[0]];
+  $('#hr-trend').replaceChildren(...(tr && tr.text ? [el('div',{class:'card',style:'margin-top:10px;padding:10px 12px'}, el('div',{class:'hint',style:'margin:0 0 4px',text:'last 7 days'}), el('ul',null, tr.text.split('\n').filter(Boolean).map(x=>el('li',{text:x.replace(/^[-•*\s]+/,'')}))))] : (logged<3 ? [el('p',{class:'hint',text:'summary unlocks once 3+ days have hours ('+logged+' so far).'})] : [])));
 }
 async function extractHours(){
   if(hrBusy || chatBusy || !store || !entries.length) return;
@@ -1749,8 +1753,7 @@ Entries: ${JSON.stringify(items)}`;
 }
 async function sumWeek(){
   if(hrSumBusy) return;
-  const t = todayStr(), start = addDays(t, -new Date().getDay() + habWeek*7);
-  const days = Array.from({length:7},(_,i)=>addDays(start,i));
+  const t = todayStr(), days = Array.from({length:7},(_,i)=>addDays(t,i-6));
   const data = days.map(ds=>({date:ds, day:new Date(ds+'T12:00:00').toLocaleDateString('en',{weekday:'short'}), blocks:hourItems(ds).sort((a,b)=>a.h-b.h).map(x=>x.h+(x.to>x.h?'-'+x.to:'')+'h '+x.a)})).filter(d=>d.blocks.length);
   if(data.length<3) return;
   const sample = await getSample(); if(!sample) return;
@@ -1761,7 +1764,7 @@ async function sumWeek(){
     habits.hourTrend[days[0]] = {text:String(txt||'').trim().slice(0,900), at:Date.now()};
     saveHabitsSoon();
   }catch(err){ habits.hourTrend[days[0]] = {text:"couldn't sum it up just now, try again in a bit."}; }
-  hrSumBusy = false; if(btn) btn.textContent = '✨ sum up the week'; renderHabits();
+  hrSumBusy = false; if(btn) btn.textContent = '✨ sum up 7 days'; renderHabits();
 }
 async function matchHabitsFromEntries(){
   if(habMatching || chatBusy || !store || !habits.list.length || !entries.length) return;
