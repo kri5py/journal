@@ -175,8 +175,10 @@ details[open]>summary .chev{transform:rotate(90deg)}
     </div>
     <div class="stitch" id="panel-journal" role="tabpanel" aria-label="Write an entry" hidden>
       <h2>spill the tea</h2>
-      <textarea id="raw" placeholder="paste or dictate your day here, messy is fine… (tip: use the mic on your keyboard)"></textarea>
+      <textarea id="raw" placeholder="paste or dictate your day here, messy is fine…"></textarea>
+      <p class="hint" id="dl-raw" style="margin:0 0 6px"></p>
       <div class="row">
+        <button class="ghost" id="mic-raw" type="button" hidden>🎙 dictate</button>
         <input type="date" id="date" aria-label="Entry date">
         <input type="time" id="time" aria-label="Entry time">
         <button class="primary" id="save">tidy up &amp; save</button>
@@ -187,6 +189,8 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <h2>chat it out</h2>
       <div class="chatlog" id="chatlog" aria-live="polite"></div>
       <textarea id="chatin" style="min-height:70px" placeholder="tell me about your day…"></textarea>
+      <div class="row" id="voicebtns" hidden><button class="ghost" id="mic-chat" type="button">🎙 talk</button><button class="ghost" id="callbtn" type="button" aria-pressed="false">📞 call mode</button></div>
+      <p class="hint" id="dl-chat" style="margin:0 0 6px"></p>
       <div class="row">
         <input type="date" id="chatdate" aria-label="Chat date">
         <input type="time" id="chattime" aria-label="Chat time">
@@ -979,7 +983,7 @@ async function sendChat(){
     const r = await sample(chatTurns(), {model:'claude-opus-5-5', modelTier:'complex', onText:({text})=>{ streamText = text; renderChat(); }});
     chat.push({role:'assistant',content:r.text});
     if(/went well|good thing|bright spot|win today|good today/i.test(r.text||'')){ try{ localStorage.setItem('journal-nudge-date', todayStr()); }catch(err){} }
-    if(TTS && $('#chatread').checked) speak(r.text,'chat');
+    if(TTS && ($('#chatread').checked || callMode)) speak(r.text,'chat', callMode ? callNext : undefined);
   }catch(e){
     if(e && e.text){ chat.push({role:'assistant',content:e.text}); }
     else { chat.pop(); ta.value = text; $('#chatstatus').textContent = "couldn't reach chat right now, your message is still in the box."; }
@@ -987,6 +991,62 @@ async function sendChat(){
   streamText = null; chatBusy = false; $('#chatsend').disabled = false; persistChat(); renderChat();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ if(chatBusy) return; maybeSaveChat(); }, 60000);
+}
+/* ---------- voice: dictation + call mode ---------- */
+let dict = null, dictTarget = 'chatin', callMode = false, silenceT = null;
+const dlFor = () => $(dictTarget==='raw' ? '#dl-raw' : '#dl-chat');
+function micLabels(){
+  const on = dict && dict.active();
+  const mc = $('#mic-chat'), mr = $('#mic-raw');
+  if(mc) mc.textContent = (on && dictTarget==='chatin') ? '⏹ done' : (callMode ? '🎙 tap to talk' : '🎙 talk');
+  if(mr) mr.textContent = (on && dictTarget==='raw') ? '⏹ done' : '🎙 dictate';
+}
+function bumpSilence(){
+  if(!callMode || dictTarget!=='chatin') return;
+  clearTimeout(silenceT);
+  silenceT = setTimeout(async()=>{ try{ await dict.stop(); }catch(e){} if($('#chatin').value.trim()) sendChat(); }, 2400);
+}
+function callNext(){
+  if(!callMode || !dict) return;
+  dictTarget = 'chatin';
+  $('#dl-chat').textContent = 'your turn…';
+  try{ dict.start().catch(()=>{ $('#dl-chat').textContent = 'tap 🎙 to answer.'; }); }catch(e){ $('#dl-chat').textContent = 'tap 🎙 to answer.'; }
+}
+function micTap(target){
+  if(!dict) return;
+  unlockSpeech(); if(speakingKey) stopSpeak();
+  if(dict.active()){ clearTimeout(silenceT); dict.stop().then(()=>{ if(callMode && target==='chatin' && $('#chatin').value.trim()) sendChat(); }).catch(()=>{}); return; }
+  dictTarget = target === 'raw' ? 'raw' : 'chatin';
+  const note = dlFor(); note.textContent = '';
+  dict.start().catch(err=>{
+    const c = err && err.code;
+    note.textContent = c==='not_granted' ? "mic access is off for this page, so i'll stay typing." : c==='dismissed' ? '' : c==='rate_limited' ? 'a lot of dictation right now, try again shortly.' : c==='stopped' ? '' : "couldn't start the mic just now.";
+  });
+}
+async function initDictation(){
+  try{ dict = await claude.use('dictation'); }catch(e){ dict = null; }
+  if(!dict) return;
+  $('#voicebtns').hidden = false; $('#mic-raw').hidden = false;
+  dict.onPartial(({text})=>{ const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
+  dict.onFinal(({text})=>{
+    const ta = $(dictTarget==='raw' ? '#raw' : '#chatin'); if(!ta) return;
+    ta.value = ta.value ? ta.value + text : text.replace(/^\s+/,'');
+    const n = dlFor(); if(n) n.textContent = ''; bumpSilence();
+  });
+  dict.onState(({state,reason})=>{
+    micLabels();
+    if(state==='idle'){ clearTimeout(silenceT); const n = dlFor(); if(n && !/^tap|mic access|couldn|a lot/.test(n.textContent)) n.textContent = ''; }
+    else if(state==='listening'){ const n = dlFor(); if(n) n.textContent = callMode && dictTarget==='chatin' ? 'listening, i send when you pause…' : 'listening…'; }
+  });
+  $('#mic-chat').addEventListener('click',()=>micTap('chatin'));
+  $('#mic-raw').addEventListener('click',()=>micTap('raw'));
+  $('#callbtn').addEventListener('click',()=>{
+    callMode = !callMode; $('#callbtn').setAttribute('aria-pressed',String(callMode));
+    $('#callbtn').textContent = callMode ? '📞 call mode on' : '📞 call mode';
+    if(callMode){ $('#dl-chat').textContent = 'tap 🎙 to talk, pause when you are done and i will answer out loud.'; if(TTS) $('#chatread').checked = true; }
+    else { clearTimeout(silenceT); try{ if(dict.active()) dict.stop(); }catch(e){} stopSpeak(); $('#dl-chat').textContent = ''; }
+    micLabels();
+  });
 }
 async function saveChat(){
   const mine = chat.filter(m=>m.role==='user');
@@ -1990,6 +2050,7 @@ renderChat();
 $('#analyze').addEventListener('click', analyze);
 render();
 initStore();
+initDictation();
 </script>
 </body>
 </html>
