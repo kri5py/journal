@@ -145,6 +145,17 @@ details[open]>summary .chev{transform:rotate(90deg)}
 .hcell[data-s="m"]{border-color:var(--soft);color:var(--soft)}
 .hcell.today{outline:2px solid var(--berry);outline-offset:1px}
 .hcell:disabled{opacity:.3;cursor:default}
+.hrgrid{display:grid;grid-template-columns:34px repeat(7,minmax(0,1fr));gap:2px;align-items:center}
+.hrgrid .hd{font-size:.68rem;color:var(--soft);text-align:center}
+.hrgrid .hd.today{color:var(--berry);font-weight:700}
+.hrgrid .hl{font-size:.62rem;color:var(--soft);text-align:right;padding-right:4px}
+.hblk{height:15px;border-radius:4px;padding:0;margin:0;border:0;background:var(--blush);opacity:.45;box-shadow:none;min-width:0}
+.hblk[data-c]{opacity:1}
+.hblk[data-c="sleep"]{background:#7a5a9a}.hblk[data-c="work"]{background:#d9739f}.hblk[data-c="body"]{background:#e58a6b}
+.hblk[data-c="social"]{background:#ff8fb8}.hblk[data-c="food"]{background:#c9a24a}.hblk[data-c="chill"]{background:#6f9fb5}.hblk[data-c="other"]{background:#a07888}
+.hblk.sel{outline:2px solid var(--berry);outline-offset:1px}
+.hlegend{display:flex;flex-wrap:wrap;gap:4px 10px;margin:8px 0 0;font-size:.68rem;color:var(--soft)}
+.hlegend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .hrow{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}
 .hrow input[type=text]{flex:1;min-width:120px}
 </style>
@@ -199,6 +210,12 @@ details[open]>summary .chev{transform:rotate(90deg)}
         <div id="hab-grid" class="habgrid"></div>
         <p class="hint" id="hab-tip" style="margin:8px 0 0">tap a day: once = done, twice = missed (you can say why), three times = clear.</p>
         <div id="hab-reason"></div>
+      </details>
+      <details class="sec" data-sec="habhours"><summary class="sub"><span>hour by hour</span><span class="chev" aria-hidden="true">›</span></summary>
+        <div class="row" style="margin:6px 0 8px;justify-content:space-between;align-items:center"><span class="hint" id="hr-range" style="margin:0"></span><button class="ghost tiny" id="hr-sum" type="button">✨ sum up the week</button></div>
+        <div id="hr-grid" class="hrgrid"></div>
+        <p class="hint" id="hr-tip" style="margin:8px 0 0">built from what you tell me about your day. tap a block to see what it was.</p>
+        <div id="hr-trend"></div>
       </details>
       <details class="sec" data-sec="habwhy"><summary class="sub"><span>what gets in the way</span><span class="chev" aria-hidden="true">›</span></summary><div id="hab-why"></div></details>
       <details class="sec" data-sec="habmanage"><summary class="sub"><span>manage habits</span><span class="chev" aria-hidden="true">›</span></summary><div id="hab-manage"></div></details>
@@ -805,7 +822,7 @@ function applyView(){
 }
 function setTab(name){
   if(name==='world') scheduleCatchUp();
-  if(name==='habits'){ renderHabits(); matchHabitsFromEntries(); }
+  if(name==='habits'){ renderHabits(); matchHabitsFromEntries(); extractHours(); }
   curTab = name; applyView();
 }
 function setMode(m){
@@ -958,7 +975,7 @@ async function sendChat(){
   ta.value = ''; chat.push({role:'user',content:text}); persistChat();
   chatBusy = true; streamText = ''; $('#chatsend').disabled = true; renderChat();
   try{
-    const r = await sample(chatTurns(), {model:'claude-sonnet-5-5', modelTier:'default', onText:({text})=>{ streamText = text; renderChat(); }});
+    const r = await sample(chatTurns(), {model:'claude-opus-5-5', modelTier:'complex', onText:({text})=>{ streamText = text; renderChat(); }});
     chat.push({role:'assistant',content:r.text});
     if(/went well|good thing|bright spot|win today|good today/i.test(r.text||'')){ try{ localStorage.setItem('journal-nudge-date', todayStr()); }catch(err){} }
     if(TTS && $('#chatread').checked) speak(r.text,'chat');
@@ -1569,11 +1586,11 @@ const goalTries = {};
 const HAB_SEED = ['Solve 2 coding questions','Prepare Angular','Prepare React','Go to gym','Burn 50-100 cals','Log weight','Log calories','Take protein','Take a shower','Brush before bed','Journal (20 min)'];
 const HAB_WHY = ['sick','no time','forgot','tired','travelling','didn\'t feel like it'];
 let habits = {list:[], log:{}, reasons:{}, matched:{}, todoSent:{}, seeded:0};
-let habWeek = 0, habReasonFor = null, habSaveT = null, habMatching = false;
+let hrSel = null, hrBusy = false, hrSumBusy = false, habWeek = 0, habReasonFor = null, habSaveT = null, habMatching = false;
 function normHabits(d){
   const o = d && typeof d==='object' ? d : {};
   const obj = x => (x && typeof x==='object' && !Array.isArray(x)) ? x : {};
-  return {list:(Array.isArray(o.list)?o.list:[]).filter(h=>h && h.id && h.name).map(h=>({id:String(h.id), name:String(h.name).slice(0,60)})), log:obj(o.log), reasons:obj(o.reasons), matched:obj(o.matched), todoSent:obj(o.todoSent), seeded:o.seeded?1:0};
+  return {list:(Array.isArray(o.list)?o.list:[]).filter(h=>h && h.id && h.name).map(h=>({id:String(h.id), name:String(h.name).slice(0,60)})), log:obj(o.log), reasons:obj(o.reasons), matched:obj(o.matched), todoSent:obj(o.todoSent), hours:obj(o.hours), hourTrend:obj(o.hourTrend), seeded:o.seeded?1:0};
 }
 function saveHabitsSoon(){
   clearTimeout(habSaveT);
@@ -1581,7 +1598,8 @@ function saveHabitsSoon(){
     if(!store || !store.saveHabits) return;
     const cut = addDays(todayStr(),-200);
     ['log','reasons','matched'].forEach(f=>{ Object.keys(habits[f]).forEach(k=>{ const d = k.includes('|') ? k.split('|')[1] : k; if(d < cut) delete habits[f][k]; }); });
-    try{ await (()=>{ const ks = Object.keys(habits.todoSent); if(ks.length>400) ks.sort((a,b)=>habits.todoSent[a]-habits.todoSent[b]).slice(0,ks.length-400).forEach(k=>{ delete habits.todoSent[k]; }); return store.saveHabits({list:habits.list, log:habits.log, reasons:habits.reasons, matched:habits.matched, todoSent:habits.todoSent, seeded:habits.seeded}); })(); }catch(e){}
+    Object.keys(habits.hours).forEach(k=>{ if(!habits.hours[k] || String(habits.hours[k].d||'') < cut) delete habits.hours[k]; });
+    try{ await (()=>{ const ks = Object.keys(habits.todoSent); if(ks.length>400) ks.sort((a,b)=>habits.todoSent[a]-habits.todoSent[b]).slice(0,ks.length-400).forEach(k=>{ delete habits.todoSent[k]; }); return store.saveHabits({list:habits.list, log:habits.log, reasons:habits.reasons, matched:habits.matched, todoSent:habits.todoSent, hours:habits.hours, hourTrend:habits.hourTrend, seeded:habits.seeded}); })(); }catch(e){}
   }, 500);
 }
 const hbHash = str => { let h = 0; for(let i=0;i<str.length;i++) h = (h*31+str.charCodeAt(i))|0; return String(h); };
@@ -1623,6 +1641,7 @@ function renderHabits(){
     });
   });
   grid.replaceChildren(...kids);
+  try{ renderHours(days, t, lab); }catch(err){}
   if(!visible.length) grid.replaceChildren(el('p',{class:'hint',text:'no habits yet, add some under manage habits.'}));
   // reasons for missed days
   const box = $('#hab-reason'); box.replaceChildren();
@@ -1660,6 +1679,86 @@ function renderHabits(){
     addBtn.addEventListener('click',doAdd); add.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); doAdd(); } });
     mg.replaceChildren(...rows, el('div',{class:'hrow'}, add, addBtn), el('p',{class:'hint',text:'started from the recurring tasks in your Todoist. medication and period reminders were left out on purpose.'}));
   }
+}
+/* ---------- hour by hour ---------- */
+const HR_CATS = {sleep:'sleep', work:'work', body:'body & health', social:'people', food:'food', chill:'chill', other:'other'};
+function hourItems(ds){
+  const out = [];
+  Object.values(habits.hours).forEach(v=>{ (v && Array.isArray(v.items) ? v.items : []).forEach(it=>{ if(it.date===ds) out.push(it); }); });
+  return out;
+}
+function renderHours(days, t, lab){
+  const grid = $('#hr-grid'); if(!grid) return;
+  $('#hr-range').textContent = lab(days[0])+' to '+lab(days[6]);
+  const per = days.map(ds=>({ds, items:hourItems(ds)}));
+  const kids = [el('div',{class:'hd'})];
+  days.forEach(ds=>{ const [y,m,d] = ds.split('-').map(Number); kids.push(el('div',{class:'hd'+(ds===t?' today':''),text:new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'narrow'})})); });
+  const fmt = h => (h%12===0?12:h%12)+(h<12?'a':'p');
+  for(let h=0;h<24;h++){
+    kids.push(el('div',{class:'hl',text:h%3===0?fmt(h):''}));
+    per.forEach(({ds,items})=>{
+      const hit = items.filter(it=>h>=it.h && h<=it.to);
+      const b = el('button',{class:'hblk'+(hrSel&&hrSel.ds===ds&&hrSel.h===h?' sel':''),type:'button'});
+      if(hit.length){ b.setAttribute('data-c',hit[0].c); b.title = fmt(h)+': '+hit.map(x=>x.a).join(', '); b.setAttribute('aria-label',lab(ds)+' '+fmt(h)+' '+hit.map(x=>x.a).join(', ')); }
+      else b.setAttribute('aria-label',lab(ds)+' '+fmt(h)+' nothing logged');
+      b.addEventListener('click',()=>{ hrSel = {ds,h}; $('#hr-tip').textContent = lab(ds)+', '+fmt(h)+': '+(hit.length?hit.map(x=>x.a).join(' · '):'nothing logged'); renderHours(days,t,lab); });
+      kids.push(b);
+    });
+  }
+  grid.replaceChildren(...kids);
+  const lg = $('#hr-legend'); 
+  if(!lg){ const d = el('div',{class:'hlegend',id:'hr-legend'}, ...Object.keys(HR_CATS).map(c=>el('span',null, el('i',{style:'background:'+getComputedStyle(document.documentElement).getPropertyValue('--x')}), HR_CATS[c]))); d.querySelectorAll('i').forEach((i,k)=>{ const probe = document.createElement('span'); probe.className='hblk'; probe.setAttribute('data-c',Object.keys(HR_CATS)[k]); probe.style.cssText='position:absolute;visibility:hidden'; document.body.appendChild(probe); i.style.background = getComputedStyle(probe).backgroundColor; probe.remove(); }); grid.after(d); }
+  const logged = per.filter(x=>x.items.length).length;
+  const sb = $('#hr-sum'); if(sb){ sb.disabled = logged<3 || hrSumBusy; sb.title = logged<3 ? 'needs at least 3 days with hours logged this week' : ''; }
+  const tr = habits.hourTrend[days[0]];
+  const box = $('#hr-trend');
+  box.replaceChildren(...(tr && tr.text ? [el('div',{class:'card',style:'margin-top:10px;padding:10px 12px'}, el('div',{class:'hint',style:'margin:0 0 4px',text:'week summary'}), el('ul',null, tr.text.split('\n').filter(Boolean).map(x=>el('li',{text:x.replace(/^[-•*\s]+/,'')}))))] : (logged<3 ? [el('p',{class:'hint',text:'summary unlocks once 3+ days this week have hours ('+logged+' so far).'})] : [])));
+}
+async function extractHours(){
+  if(hrBusy || chatBusy || !store || !entries.length) return;
+  const t = todayStr(), from = addDays(t,-14);
+  const todo = entries.filter(e=>e.tidy!==false && e.date>=from && e.date<=t).filter(e=>{
+    const sig = hbHash(String(e.raw||'')+'|'+(e.bullets||[]).join('|'));
+    return !habits.hours[e.id] || habits.hours[e.id].sig!==sig;
+  });
+  if(!todo.length) return;
+  const sample = await getSample(); if(!sample) return;
+  hrBusy = true;
+  try{
+    for(let i=0;i<todo.length;i+=4){
+      const chunk = todo.slice(i,i+4);
+      const items = chunk.map((e,k)=>({n:k, date:e.date, bullets:(e.bullets||[]).filter(b=>!String(b).startsWith('💬')).slice(0,12), raw:String(e.raw||'').slice(0,1200)}));
+      const prompt = `From each journal entry, build an hour by hour timeline of what the writer did, using ONLY times she states or clearly implies (for example "slept around 3am", "gym at 7", "meeting 2 to 4pm", "woke up at 11"). Skip anything with no time or clear part of the day. Never invent. Each item: "date" is the real calendar day it happened (resolve words like yesterday or last night from the entry date; sleeping at 3am the night before an entry dated D is on D with h 3), "h" is the start hour 0-23, "to" the last hour 0-23 (same as h for a single hour; if it runs past midnight split it into two items), "a" a 2-5 word label in plain first person style like "slept" or "gym", "c" one of sleep, work, body, social, food, chill, other (body = gym, health, self care, chores for her body). Max 10 items per entry.
+Return ONLY JSON: {"entries":[{"n":0,"items":[{"date":"YYYY-MM-DD","h":9,"to":10,"a":"standup","c":"work"}]}]}
+Entries: ${JSON.stringify(items)}`;
+      const r = await sample.json(prompt, {modelTier:'complex'});
+      (Array.isArray(r.entries)?r.entries:[]).forEach(o=>{
+        const e = chunk[Number(o.n)]; if(!e) return;
+        const list = (Array.isArray(o.items)?o.items:[]).map(x=>{
+          const h = Math.round(Number(x.h)), to = Math.round(Number(x.to==null?x.h:x.to));
+          return {date:/^\d{4}-\d{2}-\d{2}$/.test(String(x.date))?String(x.date):e.date, h, to:Math.max(h,to), a:String(x.a||'').trim().slice(0,40), c:HR_CATS[x.c]?x.c:'other'};
+        }).filter(x=>x.a && x.h>=0 && x.h<=23 && x.to<=23).slice(0,10);
+        habits.hours[e.id] = {d:e.date, sig:hbHash(String(e.raw||'')+'|'+(e.bullets||[]).join('|')), items:list};
+      });
+    }
+  }catch(err){}
+  hrBusy = false; saveHabitsSoon(); renderHabits();
+}
+async function sumWeek(){
+  if(hrSumBusy) return;
+  const t = todayStr(), start = addDays(t, -new Date().getDay() + habWeek*7);
+  const days = Array.from({length:7},(_,i)=>addDays(start,i));
+  const data = days.map(ds=>({date:ds, day:new Date(ds+'T12:00:00').toLocaleDateString('en',{weekday:'short'}), blocks:hourItems(ds).sort((a,b)=>a.h-b.h).map(x=>x.h+(x.to>x.h?'-'+x.to:'')+'h '+x.a)})).filter(d=>d.blocks.length);
+  if(data.length<3) return;
+  const sample = await getSample(); if(!sample) return;
+  hrSumBusy = true; const btn = $('#hr-sum'); if(btn){ btn.disabled = true; btn.textContent = 'thinking…'; }
+  try{
+    const prompt = `Here is one week of someone's days by hour (24h clock): ${JSON.stringify(data)}. Write 3 to 5 short bullet lines about the patterns you can really see: typical sleep and wake times, when she is most active or productive, how the week splits between work, body, people and chill, any rhythm across days. Be warm, specific and lean positive. Do not give advice or tell her what to do. Only say what the data supports, and say it is based on N logged days. One bullet per line, no heading.`;
+    const txt = await sample(prompt, {modelTier:'complex'});
+    habits.hourTrend[days[0]] = {text:String(txt||'').trim().slice(0,900), at:Date.now()};
+    saveHabitsSoon();
+  }catch(err){ habits.hourTrend[days[0]] = {text:"couldn't sum it up just now, try again in a bit."}; }
+  hrSumBusy = false; if(btn) btn.textContent = '✨ sum up the week'; renderHabits();
 }
 async function matchHabitsFromEntries(){
   if(habMatching || chatBusy || !store || !habits.list.length || !entries.length) return;
@@ -1755,7 +1854,7 @@ function scheduleCatchUp(){
     if(!store) return;
     let rs = null; try{ rs = localStorage.getItem('journal-rescore-v3'); }catch(err){}
     if(!rs && entries.length && !rescoring && !chatBusy){ rescoreAll(); }
-    matchHabitsFromEntries(); syncTodos();
+    matchHabitsFromEntries(); extractHours(); syncTodos();
     if(profBusy){ runEventBackfill(); return; }
     const todo = entries
       .filter(e=>e.tidy!==false && (profMeta.done[e.id]||0)<PROFILE_V && (profTries[e.id]||0)<2 && !profQueue.some(q=>q.id===e.id))
@@ -1799,7 +1898,7 @@ Do two things:
 2) "reaction": reply to her as her best friend and JUDGE how the conversation went, in 3 to 6 short sentences: the other person's energy and effort, what she did well or fumbled, mixed signals, honest green or red flags, and your real take. Use only what is visible, do not invent context, and do not tell her what to do unless she asked. No questions unless one is genuinely needed.
 Return ONLY JSON: {"transcript":"...","reaction":"..."}`;
   try{
-    const r = await sample.json(prompt, {images:list, model:'claude-sonnet-5-5', modelTier:'default'});
+    const r = await sample.json(prompt, {images:list, model:'claude-opus-5-5', modelTier:'complex'});
     const reaction = String((r && r.reaction)||'').trim();
     if(!reaction) throw {code:'empty'};
     chat.push({role:'user', content:'📎 shared '+list.length+(list.length===1?' screenshot':' screenshots')+(caption?': '+caption:''), shot:String((r && r.transcript)||'').slice(0,6000)});
@@ -1860,6 +1959,7 @@ applyView();
 $('#tab-chat').addEventListener('click',()=>setTab('chat'));
 $('#tab-world').addEventListener('click',()=>setTab('world'));
 $('#tab-habits').addEventListener('click',()=>setTab('habits'));
+$('#hr-sum').addEventListener('click',sumWeek);
 $('#hab-prev').addEventListener('click',()=>{ habWeek--; renderHabits(); });
 $('#hab-next').addEventListener('click',()=>{ if(habWeek<0){ habWeek++; renderHabits(); } });
 $('#chatdate').value = todayStr();
