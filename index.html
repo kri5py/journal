@@ -134,6 +134,19 @@ details[open]>summary .chev{transform:rotate(90deg)}
 @keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.bounce{animation:none}.chev{transition:none}}
 #chatreadwrap:not([hidden]){display:flex;gap:6px;align-items:center;margin:8px 2px 0}
+.habgrid{display:grid;grid-template-columns:minmax(0,1fr) repeat(7,30px);gap:8px 2px;align-items:center}
+.habgrid .hd{font-size:.68rem;color:var(--soft);text-align:center}
+.habgrid .hd.today{color:var(--berry);font-weight:700}
+.habgrid .hn{font-size:.86rem;line-height:1.15;padding-right:6px}
+.habgrid .hn small{display:block;color:var(--soft);font-size:.72rem;margin-top:1px}
+.hcell{width:25px;height:25px;border-radius:50%;padding:0;margin:0 auto;border:2px solid var(--line);background:transparent;box-shadow:none;font-size:.7rem;line-height:1;color:var(--soft);display:block}
+.hcell[data-s="d"],.hcell[data-s="e"]{background:var(--hot);border-color:var(--hot);color:var(--bg)}
+.hcell[data-s="e"]{background:var(--pink);border-color:var(--pink)}
+.hcell[data-s="m"]{border-color:var(--soft);color:var(--soft)}
+.hcell.today{outline:2px solid var(--berry);outline-offset:1px}
+.hcell:disabled{opacity:.3;cursor:default}
+.hrow{display:flex;gap:6px;align-items:center;margin:6px 0;flex-wrap:wrap}
+.hrow input[type=text]{flex:1;min-width:120px}
 </style>
 </head>
 <body>
@@ -145,6 +158,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="tab-chat" aria-selected="true" aria-controls="panel-chat">📓 journal</button>
       <button class="tab" role="tab" id="tab-world" aria-selected="false" aria-controls="panel-world">🧩 world</button>
+      <button class="tab" role="tab" id="tab-habits" aria-selected="false" aria-controls="panel-habits">🌱 habits</button>
     </div>
     <div class="modes" id="modes" role="group" aria-label="Chat or write an entry">
       <button class="mode" id="mode-chat" aria-pressed="true">💬 chat</button>
@@ -178,6 +192,16 @@ details[open]>summary .chev{transform:rotate(90deg)}
       </div>
       <p class="hint" id="shothint" hidden>screenshots are read once and never saved. only the text is kept.</p>
       <p class="hint" id="chatstatus">small talk isn't saved. a chat only goes in your log once there's enough to read a mood from, and finish &amp; tidy saves it right away if so.</p>
+    </div>
+    <div class="stitch" id="panel-habits" role="tabpanel" aria-labelledby="tab-habits" hidden>
+      <details class="sec" data-sec="habgrid" open><summary class="sub"><span id="sc-habgrid">this week</span><span class="chev" aria-hidden="true">›</span></summary>
+        <div class="row" style="margin:6px 0 10px;justify-content:space-between;align-items:center"><button class="ghost tiny" id="hab-prev" aria-label="Previous week">‹</button><span class="hint" id="hab-range" style="margin:0"></span><button class="ghost tiny" id="hab-next" aria-label="Next week">›</button></div>
+        <div id="hab-grid" class="habgrid"></div>
+        <p class="hint" id="hab-tip" style="margin:8px 0 0">tap a day: once = done, twice = missed (you can say why), three times = clear.</p>
+        <div id="hab-reason"></div>
+      </details>
+      <details class="sec" data-sec="habwhy"><summary class="sub"><span>what gets in the way</span><span class="chev" aria-hidden="true">›</span></summary><div id="hab-why"></div></details>
+      <details class="sec" data-sec="habmanage"><summary class="sub"><span>manage habits</span><span class="chev" aria-hidden="true">›</span></summary><div id="hab-manage"></div></details>
     </div>
     <div class="stitch" id="panel-world" role="tabpanel" aria-labelledby="tab-world" hidden>
       <h2>your world</h2>
@@ -279,6 +303,7 @@ async function initStore(){
           saveMemory: items => col.doc('memory').set({id:'memory', items}),
           saveProfile: p => col.doc(p.id).set(p),
           removeProfile: id => col.doc(id).delete(),
+          saveHabits: h => col.doc('habits').set({id:'habits', ...h}),
           saveMeta: m => col.doc('profilemeta3').set({id:'profilemeta3', done:m.done, ev:m.ev||{}, gl:m.gl?1:0, gs:m.gs||{}, cy:m.cy||{}})
         };
         col.onSnapshot(snap => {
@@ -288,6 +313,8 @@ async function initStore(){
           memoryItems = m && Array.isArray(m.items) ? m.items : [];
           profiles = mergeProfiles(all.filter(d => d && (d.kind==='person' || d.kind==='topic' || d.kind==='event' || d.kind==='goal' || d.kind==='cycle') && typeof d.id==='string'));
           backupProfiles();
+          habits = normHabits(all.find(d => d && d.id==='habits'));
+          if(!habits.seeded && !habits.list.length && all.length){ habits.list = HAB_SEED.map((n,i)=>({id:'h'+(i+1),name:n})); habits.seeded = 1; saveHabitsSoon(); }
           const pm = all.find(d => d && d.id==='profilemeta3');
           profMeta = normMeta(pm && pm.done, pm && pm.ev, pm && pm.gl, pm && pm.gs, pm && pm.cy);
           render(); renderMem(); scheduleCatchUp(); if(dirtyIds.size) flushDirty();
@@ -313,8 +340,11 @@ function localMode(){
     saveMemory: async items => { memoryItems = items; try{ localStorage.setItem('journal-memory', JSON.stringify(items)); }catch(e){} },
     saveProfile: async p => { try{ localStorage.setItem('journal-profiles', JSON.stringify(profiles)); }catch(e){} },
     removeProfile: async id => { profiles = profiles.filter(x=>x.id!==id); try{ localStorage.setItem('journal-profiles', JSON.stringify(profiles)); }catch(e){} },
-    saveMeta: async m => { try{ localStorage.setItem('journal-profmeta3', JSON.stringify(m)); }catch(e){} }
+    saveMeta: async m => { try{ localStorage.setItem('journal-profmeta3', JSON.stringify(m)); }catch(e){} },
+    saveHabits: async h => { try{ localStorage.setItem('journal-habits', JSON.stringify(h)); }catch(e){} }
   };
+  try{ habits = normHabits(JSON.parse(localStorage.getItem('journal-habits')||'null')); }catch(e){}
+  if(!habits.seeded && !habits.list.length){ habits.list = HAB_SEED.map((n,i)=>({id:'h'+(i+1),name:n})); habits.seeded = 1; saveHabitsSoon(); }
   render();
 }
 
@@ -324,7 +354,7 @@ async function getSample(){
 }
 function fallbackTidy(raw){
   const parts = raw.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(Boolean).slice(0,8);
-  return { title:'untitled day', emoji:'📝', mood:'unsorted', score:3, bullets:parts.length?parts:[raw.trim()], themes:[], wins:[], tidy:false };
+  return { title:'untitled day', emoji:'📝', mood:'unsorted', score:3, bullets:parts.length?parts:[raw.trim()], themes:[], wins:[], todos:[], tidy:false };
 }
 async function tidy(raw, chatMode=false, fb=raw){
   const sample = await getSample();
@@ -333,7 +363,7 @@ async function tidy(raw, chatMode=false, fb=raw){
 `You clean up voice-transcribed journal entries. The text may contain mishears, homophones, filler words, repeated phrases, missing punctuation and rambling.
 Rewrite it into a clear log WITHOUT inventing facts, people, or feelings that are not implied. Keep the writer's voice (first person, casual).
 ${chatMode?'This input is a chat between the writer ("Me") and a journaling buddy. Write the bullets so roughly 60% come from what the writer said, felt or did (first person) and roughly 40% come from the buddy replies: the useful takes, reframes, observations or funny lines the buddy offered. Start each buddy bullet with "💬 " and phrase it as the buddy view (for example "💬 Buddy thinks ...") so it is never mistaken for a fact about the writer; this overrides the first-person rule for those bullets. Skip buddy filler. For example, 5 bullets means 3 from the writer and 2 from the buddy. If text from a screenshot names the other person, use that real name in the bullets instead of phrases like "the guy from the screenshots". Memories, mood and score come from the writer only. Also add a boolean field "readable": true only if the writer shared enough real content (what happened, or how they feel) to infer a mood; false for greetings, small talk, gibberish or one-word replies. Also add "memories": an array of up to 4 short durable facts about the writer worth remembering for future chats (people in their life, ongoing situations, routines, preferences), not passing moods or one-off events and not very sensitive details; use [] if none. Already remembered, do not repeat: '+JSON.stringify(memoryItems.map(m=>m.t))+'\n':''}Return ONLY JSON in this exact shape:
-{"title": "3-6 word cute title for the entry", "emoji": "one emoji", "mood": "one or two word mood", "score": integer 1-5 (1 = awful, 2 = low or stressed, 3 = truly flat or evenly mixed, 4 = good, 5 = great; judge only by how the writer sounds about her own day. Use the full range: a day with wins, laughter, excitement, pride, relief or feeling loved is 4 or 5; a rough, anxious, sad or angry day is 1 or 2. 3 is rare, only when there is genuinely no lean either way. Never pick 3 just to be safe. Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.), "bullets": ["3-7 short first-person bullets, each one clear event, thought or feeling"], "wins": ["up to 3 short first-person positive moments from the WRITER: something good that happened, something she did well or is proud of, or something she is looking forward to; empty list if there is none; never invent, never from the buddy"], "themes": ["up to 3 one-word themes"]}
+{"title": "3-6 word cute title for the entry", "emoji": "one emoji", "mood": "one or two word mood", "score": integer 1-5 (1 = awful, 2 = low or stressed, 3 = truly flat or evenly mixed, 4 = good, 5 = great; judge only by how the writer sounds about her own day. Use the full range: a day with wins, laughter, excitement, pride, relief or feeling loved is 4 or 5; a rough, anxious, sad or angry day is 1 or 2. 3 is rare, only when there is genuinely no lean either way. Never pick 3 just to be safe. Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.), "bullets": ["3-7 short first-person bullets, each one clear event, thought or feeling"], "todos": [up to 5 things the WRITER says she wants, needs or plans to do later, as short imperative to-dos like "Call the plumber". Only future actions she mentions, never things already done, never daily routines or habits (gym, meds, studying, journaling), never suggestions from the buddy. You decide each priority: "p1" urgent or due today or tomorrow or serious consequences, "p2" important this week, "p3" normal, "p4" someday or nice to have. "due" is today, tomorrow, a weekday, or empty. Empty list if none. Each item looks like {"task":"","priority":"p3","due":""}], "wins": ["up to 3 short first-person positive moments from the WRITER: something good that happened, something she did well or is proud of, or something she is looking forward to; empty list if there is none; never invent, never from the buddy"], "themes": ["up to 3 one-word themes"]}
 
 Entry:
 """${raw}"""`;
@@ -349,6 +379,7 @@ Entry:
       bullets:r.bullets.map(b=>String(b).slice(0,300)).slice(0,10),
       themes:Array.isArray(r.themes)?r.themes.map(t=>String(t).slice(0,20)).slice(0,3):[],
       wins:Array.isArray(r.wins)?r.wins.map(w=>String(w).trim().slice(0,140)).filter(Boolean).slice(0,3):[],
+      todos:parseTodos(r.todos),
       tidy:true, readable:true,
       memories: chatMode && Array.isArray(r.memories) ? r.memories.map(x=>String(x).slice(0,140)).slice(0,4) : []
     };
@@ -394,7 +425,7 @@ async function addTranscription(e, raw, btn){
     const prompt =
 `You maintain a journal entry made of bullet points. The writer just added another voice-transcribed note (may contain mishears and filler).
 The new note can do two things: add new content, and/or CORRECT earlier bullets (e.g. "that bullet was wrong", "actually it was Tuesday", "ignore what I said about X", "I meant Y"). Apply any corrections to the existing bullets: fix them, merge them, or remove them if the writer retracted them. Add genuinely new content as new bullets. Do not invent facts. Keep first-person casual voice, short bullets.
-Return ONLY JSON: {"bullets": ["the FULL updated list of bullets"], "title": "3-6 word title (keep the current one unless the content changed a lot)", "emoji": "one emoji", "mood": "one or two word mood", "score": integer 1-5 (1 = awful, 2 = low or stressed, 3 = rare, truly flat, 4 = good, 5 = great; judge only by how the writer sounds about her own day, use the full range, never pick 3 to be safe. Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.), "wins": ["up to 3 short first-person positive moments from the WRITER: something good that happened, something she did well or is proud of, or something she is looking forward to; empty list if there is none; never invent, never from the buddy"], "themes": ["up to 3 one-word themes"], "changes": "one short sentence on what you fixed or added, e.g. 'fixed the meeting time, added 2 bullets'"}
+Return ONLY JSON: {"bullets": ["the FULL updated list of bullets"], "title": "3-6 word title (keep the current one unless the content changed a lot)", "emoji": "one emoji", "mood": "one or two word mood", "score": integer 1-5 (1 = awful, 2 = low or stressed, 3 = rare, truly flat, 4 = good, 5 = great; judge only by how the writer sounds about her own day, use the full range, never pick 3 to be safe. Judge by the good in the day: weigh the positive moments (wins, fun, progress, connection, calm, relief, things she is looking forward to) most, and let a bad moment lower the score only if it clearly dominated the whole entry.), "todos": [up to 5 things the WRITER says she wants, needs or plans to do later, as short imperative to-dos like "Call the plumber". Only future actions she mentions, never things already done, never daily routines or habits (gym, meds, studying, journaling), never suggestions from the buddy. You decide each priority: "p1" urgent or due today or tomorrow or serious consequences, "p2" important this week, "p3" normal, "p4" someday or nice to have. "due" is today, tomorrow, a weekday, or empty. Empty list if none. Each item looks like {"task":"","priority":"p3","due":""}], "wins": ["up to 3 short first-person positive moments from the WRITER: something good that happened, something she did well or is proud of, or something she is looking forward to; empty list if there is none; never invent, never from the buddy"], "themes": ["up to 3 one-word themes"], "changes": "one short sentence on what you fixed or added, e.g. 'fixed the meeting time, added 2 bullets'"}
 
 Current title: ${e.title}
 Current bullets:
@@ -414,6 +445,7 @@ New transcription:
           bullets:r.bullets.map(x=>String(x).slice(0,300)).slice(0,25),
           themes:Array.isArray(r.themes)?r.themes.map(x=>String(x).slice(0,20)).slice(0,3):(e.themes||[]),
           wins:Array.isArray(r.wins)?r.wins.map(w=>String(w).trim().slice(0,140)).filter(Boolean).slice(0,3):(e.wins||[]),
+          todos:Array.isArray(r.todos)?parseTodos(r.todos):(e.todos||[]),
           note: r.changes ? String(r.changes).slice(0,160) : 'updated from your new note'
         };
       }
@@ -698,7 +730,7 @@ function renderLog(days){
         body.append(el('div',{class:'entry'}, el('div',{class:'editbox'}, ti, el('div',{class:'row',style:'margin:0'},di,tmi), moodRow, ta, el('span',{class:'hint',style:'margin:0',text:'one bullet per line'})), acts));
         return;
       }
-      const ul = el('div',null, el('ul',null,(e.bullets||[]).map(b=>el('li',{text:b}))), (e.wins&&e.wins.length) ? el('p',{class:'hint',style:'margin:2px 0 6px',text:'✨ '+e.wins.join(' · ')}) : null);
+      const ul = el('div',null, el('ul',null,(e.bullets||[]).map(b=>el('li',{text:b}))), (e.wins&&e.wins.length) ? el('p',{class:'hint',style:'margin:2px 0 6px',text:'✨ '+e.wins.join(' · ')}) : null, (e.todos&&e.todos.length) ? el('p',{class:'hint',style:'margin:2px 0 6px'}, '📌 ', e.todos.map(td=>td.t+' ('+td.p+')'+(habits.todoSent[todoKey(td,e)]?' ✓':'')).join(' · '), (e.todos.some(td=>!habits.todoSent[todoKey(td,e)]) ? el('button',{class:'ghost tiny',type:'button',style:'margin-left:6px',text:'send to Todoist',onclick:()=>syncTodos(true)}) : null), todoMsg && e.todos.some(td=>!habits.todoSent[todoKey(td,e)]) ? ' '+todoMsg : '') : null);
       const noteEl = e.note ? el('p',{class:'hint',style:'margin:4px 0',text:'✎ '+e.note}) : null;
       const raw = el('details',{class:'raw'}, el('summary',{text:'original transcription'}), el('p',{text:e.raw}));
       const acts = el('div',{class:'acts'});
@@ -763,6 +795,8 @@ function applyView(){
   $('#panel-chat').hidden = !(curTab==='chat' && curMode==='chat');
   $('#panel-journal').hidden = !(curTab==='chat' && curMode==='entry');
   $('#panel-world').hidden = curTab!=='world';
+  $('#panel-habits').hidden = curTab!=='habits';
+  $('#tab-habits').setAttribute('aria-selected', String(curTab==='habits'));
   $('#modes').hidden = curTab!=='chat';
   $('#tab-chat').setAttribute('aria-selected', String(curTab==='chat'));
   $('#tab-world').setAttribute('aria-selected', String(curTab==='world'));
@@ -771,6 +805,7 @@ function applyView(){
 }
 function setTab(name){
   if(name==='world') scheduleCatchUp();
+  if(name==='habits'){ renderHabits(); matchHabitsFromEntries(); }
   curTab = name; applyView();
 }
 function setMode(m){
@@ -923,7 +958,7 @@ async function sendChat(){
   ta.value = ''; chat.push({role:'user',content:text}); persistChat();
   chatBusy = true; streamText = ''; $('#chatsend').disabled = true; renderChat();
   try{
-    const r = await sample(chatTurns(), {model:'claude-opus-5-5', modelTier:'complex', onText:({text})=>{ streamText = text; renderChat(); }});
+    const r = await sample(chatTurns(), {model:'claude-sonnet-5-5', modelTier:'default', onText:({text})=>{ streamText = text; renderChat(); }});
     chat.push({role:'assistant',content:r.text});
     if(/went well|good thing|bright spot|win today|good today/i.test(r.text||'')){ try{ localStorage.setItem('journal-nudge-date', todayStr()); }catch(err){} }
     if(TTS && $('#chatread').checked) speak(r.text,'chat');
@@ -1530,6 +1565,156 @@ Items: ${JSON.stringify(items)}`);
 const profTries = {};
 let catchTimer = null;
 const goalTries = {};
+/* ---------- habits ---------- */
+const HAB_SEED = ['Solve 2 coding questions','Prepare Angular','Prepare React','Go to gym','Burn 50-100 cals','Log weight','Log calories','Take protein','Take a shower','Brush before bed','Journal (20 min)'];
+const HAB_WHY = ['sick','no time','forgot','tired','travelling','didn\'t feel like it'];
+let habits = {list:[], log:{}, reasons:{}, matched:{}, todoSent:{}, seeded:0};
+let habWeek = 0, habReasonFor = null, habSaveT = null, habMatching = false;
+function normHabits(d){
+  const o = d && typeof d==='object' ? d : {};
+  const obj = x => (x && typeof x==='object' && !Array.isArray(x)) ? x : {};
+  return {list:(Array.isArray(o.list)?o.list:[]).filter(h=>h && h.id && h.name).map(h=>({id:String(h.id), name:String(h.name).slice(0,60)})), log:obj(o.log), reasons:obj(o.reasons), matched:obj(o.matched), todoSent:obj(o.todoSent), seeded:o.seeded?1:0};
+}
+function saveHabitsSoon(){
+  clearTimeout(habSaveT);
+  habSaveT = setTimeout(async()=>{
+    if(!store || !store.saveHabits) return;
+    const cut = addDays(todayStr(),-200);
+    ['log','reasons','matched'].forEach(f=>{ Object.keys(habits[f]).forEach(k=>{ const d = k.includes('|') ? k.split('|')[1] : k; if(d < cut) delete habits[f][k]; }); });
+    try{ await (()=>{ const ks = Object.keys(habits.todoSent); if(ks.length>400) ks.sort((a,b)=>habits.todoSent[a]-habits.todoSent[b]).slice(0,ks.length-400).forEach(k=>{ delete habits.todoSent[k]; }); return store.saveHabits({list:habits.list, log:habits.log, reasons:habits.reasons, matched:habits.matched, todoSent:habits.todoSent, seeded:habits.seeded}); })(); }catch(e){}
+  }, 500);
+}
+const hbHash = str => { let h = 0; for(let i=0;i<str.length;i++) h = (h*31+str.charCodeAt(i))|0; return String(h); };
+const hbDone = (hid,ds) => { const v = habits.log[hid+'|'+ds]; return v==='d' || v==='e'; };
+function hbStreak(hid){
+  let ds = todayStr(), n = 0;
+  if(!hbDone(hid,ds)) ds = addDays(ds,-1);
+  while(hbDone(hid,ds) && n<400){ n++; ds = addDays(ds,-1); }
+  return n;
+}
+function hbCycle(hid, ds){
+  const k = hid+'|'+ds, cur = habits.log[k] || '';
+  if(cur==='d' || cur==='e'){ habits.log[k] = 'm'; habReasonFor = k; }
+  else if(cur==='m'){ habits.log[k] = 'x'; delete habits.reasons[k]; if(habReasonFor===k) habReasonFor = null; }
+  else habits.log[k] = 'd';
+  saveHabitsSoon(); renderHabits();
+}
+function renderHabits(){
+  const grid = $('#hab-grid'); if(!grid) return;
+  const t = todayStr(), start = addDays(t, -new Date().getDay() + habWeek*7);
+  const days = Array.from({length:7},(_,i)=>addDays(start,i));
+  const lab = ds => { const [y,m,d] = ds.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString(undefined,{day:'numeric',month:'short'}); };
+  $('#hab-range').textContent = lab(days[0])+' to '+lab(days[6]) + (habWeek===0?' (this week)':'');
+  $('#hab-next').disabled = habWeek>=0;
+  const visible = habits.list;
+  const kids = [el('div',{class:'hd'})];
+  days.forEach(ds=>{ const [y,m,d] = ds.split('-').map(Number); kids.push(el('div',{class:'hd'+(ds===t?' today':''),text:new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'narrow'})})); });
+  visible.forEach(h=>{
+    const n = days.filter(ds=>hbDone(h.id,ds)).length, st = hbStreak(h.id);
+    kids.push(el('div',{class:'hn'}, h.name, el('small',{text:(st>0?'🔥 '+st+' · ':'')+n+'/7'})));
+    days.forEach(ds=>{
+      const v = habits.log[h.id+'|'+ds] || '';
+      const b = el('button',{class:'hcell'+(ds===t?' today':''),type:'button','data-s':v==='x'?'':v,'aria-label':h.name+', '+lab(ds)+(v==='d'||v==='e'?', done':v==='m'?', missed':'')});
+      b.textContent = v==='d'||v==='e' ? '✓' : v==='m' ? '✕' : '';
+      if(v==='e') b.title = 'picked up from your entries';
+      if(v==='m' && habits.reasons[h.id+'|'+ds]) b.title = habits.reasons[h.id+'|'+ds];
+      if(ds>t) b.disabled = true; else b.addEventListener('click',()=>hbCycle(h.id,ds));
+      kids.push(b);
+    });
+  });
+  grid.replaceChildren(...kids);
+  if(!visible.length) grid.replaceChildren(el('p',{class:'hint',text:'no habits yet, add some under manage habits.'}));
+  // reasons for missed days
+  const box = $('#hab-reason'); box.replaceChildren();
+  const missed = [];
+  visible.forEach(h=>days.forEach(ds=>{ const k = h.id+'|'+ds; if(habits.log[k]==='m') missed.push({k, h, ds}); }));
+  if(habReasonFor){
+    const m = missed.find(x=>x.k===habReasonFor) || (()=>{ const [hid,ds] = habReasonFor.split('|'); const h = habits.list.find(x=>x.id===hid); return h && habits.log[habReasonFor]==='m' ? {k:habReasonFor,h,ds} : null; })();
+    if(m){
+      const inp = el('input',{type:'text',maxlength:'80',placeholder:'why? (optional)',value:habits.reasons[m.k]||''});
+      const save = txt => { const v = String(txt||'').trim().slice(0,80); if(v) habits.reasons[m.k] = v; else delete habits.reasons[m.k]; habReasonFor = null; saveHabitsSoon(); renderHabits(); };
+      box.append(el('div',{style:'margin-top:10px'},
+        el('p',{class:'hint',style:'margin:0 0 4px',text:'why did you skip '+m.h.name.toLowerCase()+' on '+lab(m.ds)+'?'}),
+        el('div',{class:'hrow'}, ...HAB_WHY.map(w=>el('button',{class:'ghost tiny',type:'button',text:w,onclick:()=>save(w)}))),
+        el('div',{class:'hrow'}, inp, el('button',{class:'tiny',type:'button',text:'save',onclick:()=>save(inp.value)}), el('button',{class:'ghost tiny',type:'button',text:'skip',onclick:()=>save(habits.reasons[m.k]||'')}))));
+    }else habReasonFor = null;
+  }
+  const withWhy = missed.filter(x=>habits.reasons[x.k] && x.k!==habReasonFor);
+  if(withWhy.length) box.append(el('ul',{class:'tl',style:'margin-top:10px'}, withWhy.map(x=>el('li',null, el('span',{class:'chip',text:lab(x.ds)}), ' '+x.h.name+': '+habits.reasons[x.k], ' ', el('button',{class:'ghost tiny',type:'button',text:'edit',onclick:()=>{ habReasonFor = x.k; renderHabits(); }})))));
+  // what gets in the way
+  const why = {}; Object.keys(habits.reasons).forEach(k=>{ if(habits.log[k]!=='m') return; const r = String(habits.reasons[k]).trim().toLowerCase(); if(r) why[r] = (why[r]||0)+1; });
+  const top = Object.entries(why).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  $('#hab-why').replaceChildren(top.length ? el('ul',{class:'tl'},top.map(([r,c])=>el('li',null, el('span',{class:'chip',text:'×'+c}), ' '+r))) : el('p',{class:'hint',text:'when you miss a habit and say why, the reasons that keep coming up will collect here.'}));
+  // manage
+  const mg = $('#hab-manage'); if(mg && !mg.contains(document.activeElement)){
+    const rows = habits.list.map((h,i)=>{
+      const inp = el('input',{type:'text',maxlength:'60',value:h.name,'aria-label':'Habit name'});
+      inp.addEventListener('change',()=>{ const v = inp.value.trim(); if(v){ h.name = v.slice(0,60); saveHabitsSoon(); renderHabits(); } else inp.value = h.name; });
+      const rm = el('button',{class:'ghost tiny',type:'button',text:'remove'});
+      tapConfirm(rm,'sure?',()=>{ habits.list = habits.list.filter(x=>x.id!==h.id); saveHabitsSoon(); renderHabits(); });
+      return el('div',{class:'hrow'}, inp, rm);
+    });
+    const add = el('input',{type:'text',maxlength:'60',placeholder:'new habit'});
+    const addBtn = el('button',{class:'tiny',type:'button',text:'add'});
+    const doAdd = () => { const v = add.value.trim(); if(!v) return; habits.list.push({id:'h'+Date.now().toString(36), name:v.slice(0,60)}); add.value=''; saveHabitsSoon(); renderHabits(); };
+    addBtn.addEventListener('click',doAdd); add.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); doAdd(); } });
+    mg.replaceChildren(...rows, el('div',{class:'hrow'}, add, addBtn), el('p',{class:'hint',text:'started from the recurring tasks in your Todoist. medication and period reminders were left out on purpose.'}));
+  }
+}
+async function matchHabitsFromEntries(){
+  if(habMatching || chatBusy || !store || !habits.list.length || !entries.length) return;
+  const t = todayStr(), from = addDays(t,-13), byDate = {};
+  entries.filter(e=>e.tidy!==false && e.date>=from && e.date<=t).forEach(e=>{
+    (byDate[e.date] = byDate[e.date] || []).push(...(e.bullets||[]).filter(b=>!String(b).startsWith('💬')).map(b=>String(b).slice(0,200)), ...(e.wins||[]));
+  });
+  const todo = Object.keys(byDate).filter(d=>habits.matched[d]!==hbHash(habits.list.map(h=>h.id).join(',')+byDate[d].join('|')));
+  if(!todo.length) return;
+  const sample = await getSample(); if(!sample) return;
+  habMatching = true;
+  try{
+    for(let i=0;i<todo.length;i+=5){
+      const chunk = todo.slice(i,i+5);
+      const prompt = `Here are someone's habits: ${JSON.stringify(habits.list.map(h=>({id:h.id,name:h.name})))}.
+Here are her journal notes by date: ${JSON.stringify(Object.fromEntries(chunk.map(d=>[d,byDate[d].slice(0,14)])))}.
+For each date, list the habits she clearly says she DID on that day. Be strict: only when the notes clearly show she actually did it that day, not a plan, wish or intention, and not something similar but different. If unsure, leave it out.
+Return ONLY JSON: {"matches":[{"date":"YYYY-MM-DD","habit":"<habit id>"}]}`;
+      const r = await sample.json(prompt, {modelTier:'complex'});
+      (Array.isArray(r.matches)?r.matches:[]).forEach(m=>{
+        const h = habits.list.find(x=>x.id===m.habit); if(!h || !chunk.includes(m.date)) return;
+        const k = h.id+'|'+m.date; if(!habits.log[k]) habits.log[k] = 'e';
+      });
+      chunk.forEach(d=>{ habits.matched[d] = hbHash(habits.list.map(h=>h.id).join(',')+byDate[d].join('|')); });
+    }
+  }catch(err){}
+  habMatching = false; saveHabitsSoon(); renderHabits();
+}
+
+/* ---------- to-dos from entries into Todoist ---------- */
+function parseTodos(a){
+  return (Array.isArray(a)?a:[]).map(x=>({t:String((x&&(x.task||x.t))||'').trim().slice(0,120), p:['p1','p2','p3','p4'].includes(String((x&&(x.priority||x.p))||'').toLowerCase())?String(x.priority||x.p).toLowerCase():'p3', due:String((x&&(x.due))||'').trim().slice(0,30)})).filter(x=>x.t).slice(0,5);
+}
+const todoKey = (td,e) => hbHash(String(td.t).toLowerCase()+'|'+e.date);
+const todoTried = new Set();
+let todoBusy = false, todoMsg = '';
+async function syncTodos(manual){
+  if(todoBusy || !store) return;
+  const pend = [];
+  entries.filter(e=>e.tidy!==false && Array.isArray(e.todos)).forEach(e=>e.todos.forEach(td=>{ if(!td || !td.t) return; const k = todoKey(td,e); if(habits.todoSent[k]) return; if(!manual && todoTried.has(k)) return; pend.push({k,td}); }));
+  if(!pend.length) return;
+  let mcp = null; try{ mcp = await claude.use('mcp'); }catch(err){}
+  if(!mcp || typeof mcp.callTool!=='function'){ todoMsg = "Todoist isn't reachable from here, so to-dos weren't sent."; pend.forEach(x=>todoTried.add(x.k)); render(); return; }
+  todoBusy = true;
+  const batch = pend.slice(0,25); batch.forEach(x=>todoTried.add(x.k));
+  try{
+    await mcp.callTool('Todoist','add-tasks',{tasks:batch.map(({td})=>({content:td.t, priority:td.p, projectId:'inbox', ...(td.due?{dueString:td.due}:{})}))});
+    batch.forEach(({k})=>{ habits.todoSent[k] = Date.now(); });
+    todoMsg = ''; saveHabitsSoon();
+  }catch(err){
+    const c = err && err.code;
+    todoMsg = c==='approval_required' ? "Todoist access wasn't allowed, so to-dos weren't sent." : (c==='needs_reauth'||c==='server_not_connected') ? "Todoist isn't connected for this page, so to-dos weren't sent." : "couldn't send to Todoist just now.";
+  }
+  todoBusy = false; render();
+}
 let rescoring = false;
 async function rescoreAll(){
   if(rescoring || chatBusy || !store) return;
@@ -1570,6 +1755,7 @@ function scheduleCatchUp(){
     if(!store) return;
     let rs = null; try{ rs = localStorage.getItem('journal-rescore-v3'); }catch(err){}
     if(!rs && entries.length && !rescoring && !chatBusy){ rescoreAll(); }
+    matchHabitsFromEntries(); syncTodos();
     if(profBusy){ runEventBackfill(); return; }
     const todo = entries
       .filter(e=>e.tidy!==false && (profMeta.done[e.id]||0)<PROFILE_V && (profTries[e.id]||0)<2 && !profQueue.some(q=>q.id===e.id))
@@ -1613,7 +1799,7 @@ Do two things:
 2) "reaction": reply to her as her best friend and JUDGE how the conversation went, in 3 to 6 short sentences: the other person's energy and effort, what she did well or fumbled, mixed signals, honest green or red flags, and your real take. Use only what is visible, do not invent context, and do not tell her what to do unless she asked. No questions unless one is genuinely needed.
 Return ONLY JSON: {"transcript":"...","reaction":"..."}`;
   try{
-    const r = await sample.json(prompt, {images:list, model:'claude-opus-5-5', modelTier:'complex'});
+    const r = await sample.json(prompt, {images:list, model:'claude-sonnet-5-5', modelTier:'default'});
     const reaction = String((r && r.reaction)||'').trim();
     if(!reaction) throw {code:'empty'};
     chat.push({role:'user', content:'📎 shared '+list.length+(list.length===1?' screenshot':' screenshots')+(caption?': '+caption:''), shot:String((r && r.transcript)||'').slice(0,6000)});
@@ -1630,7 +1816,7 @@ Return ONLY JSON: {"transcript":"...","reaction":"..."}`;
 
 function render(){
   const days = groupByDay();
-  renderStats(days); renderChart(days); renderLog(days); renderWorld();
+  renderStats(days); renderChart(days); renderLog(days); renderWorld(); renderHabits();
 }
 
 
@@ -1673,6 +1859,9 @@ $('#mode-entry').addEventListener('click',()=>setMode('entry'));
 applyView();
 $('#tab-chat').addEventListener('click',()=>setTab('chat'));
 $('#tab-world').addEventListener('click',()=>setTab('world'));
+$('#tab-habits').addEventListener('click',()=>setTab('habits'));
+$('#hab-prev').addEventListener('click',()=>{ habWeek--; renderHabits(); });
+$('#hab-next').addEventListener('click',()=>{ if(habWeek<0){ habWeek++; renderHabits(); } });
 $('#chatdate').value = todayStr();
 $('#chattime').value = nowTime();
 $('#chatdate').addEventListener('change',()=>{ chatTimeTouched = true; });
