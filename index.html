@@ -233,6 +233,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     </div>
   </div>
 
+  <div id="journalbelow">
   <div class="card">
     <h2>my mood lately</h2>
     <div class="modes" id="ranges" role="group" aria-label="Mood range" style="margin:0 0 10px">
@@ -264,6 +265,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <ul class="memlist" id="memlist"></ul>
     <button class="ghost tiny" id="memclear">forget everything</button>
   </details>
+  </div>
 </div>
 
 <script>
@@ -813,6 +815,7 @@ function applyView(){
   $('#panel-journal').hidden = !(curTab==='chat' && curMode==='entry');
   $('#panel-world').hidden = curTab!=='world';
   $('#panel-habits').hidden = curTab!=='habits';
+  $('#journalbelow').hidden = curTab!=='chat';
   $('#tab-habits').setAttribute('aria-selected', String(curTab==='habits'));
   $('#modes').hidden = curTab!=='chat';
   $('#tab-chat').setAttribute('aria-selected', String(curTab==='chat'));
