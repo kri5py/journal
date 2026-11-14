@@ -993,24 +993,26 @@ async function sendChat(){
   saveTimer = setTimeout(()=>{ if(chatBusy) return; maybeSaveChat(); }, 60000);
 }
 /* ---------- voice: dictation + call mode ---------- */
-let dict = null, dictTarget = 'chatin', callMode = false, silenceT = null;
+let dict = null, dictTarget = 'chatin', callMode = false, silenceT = null, ignoreUntil = 0;
+const callDeaf = () => callMode && dictTarget==='chatin' && (chatBusy || speakingKey==='chat' || Date.now()<ignoreUntil);
 const dlFor = () => $(dictTarget==='raw' ? '#dl-raw' : '#dl-chat');
 function micLabels(){
   const on = dict && dict.active();
   const mc = $('#mic-chat'), mr = $('#mic-raw');
-  if(mc) mc.textContent = (on && dictTarget==='chatin') ? '⏹ done' : (callMode ? '🎙 tap to talk' : '🎙 talk');
+  if(mc) mc.textContent = (on && dictTarget==='chatin') ? (callMode ? '⏹ end call' : '⏹ done') : (callMode ? '🎙 start talking' : '🎙 talk');
   if(mr) mr.textContent = (on && dictTarget==='raw') ? '⏹ done' : '🎙 dictate';
 }
 function bumpSilence(){
   if(!callMode || dictTarget!=='chatin') return;
   clearTimeout(silenceT);
-  silenceT = setTimeout(async()=>{ try{ await dict.stop(); }catch(e){} if($('#chatin').value.trim()) sendChat(); }, 2400);
+  silenceT = setTimeout(()=>{ if(callDeaf()) return; if($('#chatin').value.trim()){ $('#dl-chat').textContent = 'thinking…'; sendChat(); } }, 2200);
 }
 function callNext(){
   if(!callMode || !dict) return;
-  dictTarget = 'chatin';
+  dictTarget = 'chatin'; ignoreUntil = Date.now()+900;
   $('#dl-chat').textContent = 'your turn…';
-  try{ dict.start().catch(()=>{ $('#dl-chat').textContent = 'tap 🎙 to answer.'; }); }catch(e){ $('#dl-chat').textContent = 'tap 🎙 to answer.'; }
+  $('#chatin').value = '';
+  if(!dict.active()){ try{ dict.start().catch(()=>{ $('#dl-chat').textContent = 'the mic stopped, tap 🎙 to carry on.'; }); }catch(e){ $('#dl-chat').textContent = 'the mic stopped, tap 🎙 to carry on.'; } }
 }
 function micTap(target){
   if(!dict) return;
@@ -1027,23 +1029,24 @@ async function initDictation(){
   try{ dict = await claude.use('dictation'); }catch(e){ dict = null; }
   if(!dict) return;
   $('#voicebtns').hidden = false; $('#mic-raw').hidden = false;
-  dict.onPartial(({text})=>{ const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
+  dict.onPartial(({text})=>{ if(callDeaf()) return; const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
   dict.onFinal(({text})=>{
+    if(callDeaf()) return;
     const ta = $(dictTarget==='raw' ? '#raw' : '#chatin'); if(!ta) return;
     ta.value = ta.value ? ta.value + text : text.replace(/^\s+/,'');
     const n = dlFor(); if(n) n.textContent = ''; bumpSilence();
   });
   dict.onState(({state,reason})=>{
     micLabels();
-    if(state==='idle'){ clearTimeout(silenceT); const n = dlFor(); if(n && !/^tap|mic access|couldn|a lot/.test(n.textContent)) n.textContent = ''; }
-    else if(state==='listening'){ const n = dlFor(); if(n) n.textContent = callMode && dictTarget==='chatin' ? 'listening, i send when you pause…' : 'listening…'; }
+    if(state==='idle'){ clearTimeout(silenceT); const n = dlFor(); if(n && !/^tap|^the mic|mic access|couldn|a lot/.test(n.textContent)) n.textContent = ''; }
+    else if(state==='listening'){ const n = dlFor(); if(n) n.textContent = callMode && dictTarget==='chatin' ? 'on a call: just talk, i answer when you pause. tap end call to stop.' : 'listening…'; }
   });
   $('#mic-chat').addEventListener('click',()=>micTap('chatin'));
   $('#mic-raw').addEventListener('click',()=>micTap('raw'));
   $('#callbtn').addEventListener('click',()=>{
     callMode = !callMode; $('#callbtn').setAttribute('aria-pressed',String(callMode));
     $('#callbtn').textContent = callMode ? '📞 call mode on' : '📞 call mode';
-    if(callMode){ $('#dl-chat').textContent = 'tap 🎙 to talk, pause when you are done and i will answer out loud.'; if(TTS) $('#chatread').checked = true; }
+    if(callMode){ if(TTS) $('#chatread').checked = true; micTap('chatin'); }
     else { clearTimeout(silenceT); try{ if(dict.active()) dict.stop(); }catch(e){} stopSpeak(); $('#dl-chat').textContent = ''; }
     micLabels();
   });
