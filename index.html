@@ -1511,7 +1511,7 @@ function renderWins(){
   const bar = $('#winbar'); if(bar){
     const ws = allWins(); const t = todayStr();
     const today = ws.filter(w=>w.date===t);
-    const w = today[0] || ws[0];
+    const w = today[0];
     if(!w){ bar.hidden = true; }
     else{ bar.hidden = false; $('#win1').textContent = w.date===t ? "✨ today's win" : '✨ latest win · '+prettyDate(w.date); $('#win2').textContent = w.text; }
   }
