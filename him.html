@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kabir</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121214;--card:#1c1c1f;--blush:#2a2a2f;--pink:#ff8fb8;--hot:#ff6fa9;--berry:#ffb3d1;--ink:#f2eef0;--soft:#a9a1a7;--line:#38383e;--chip:#242428;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Quicksand',system-ui,sans-serif;font-weight:600;line-height:1.45;display:flex;justify-content:center}
+.app{width:100%;max-width:640px;height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 14px calc(10px + env(safe-area-inset-bottom,0))}
+header{display:flex;align-items:center;gap:10px;padding:12px 2px 10px;border-bottom:1px solid var(--line)}
+.av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2a2a2f,#3a3a42);border:2px solid var(--pink);display:grid;place-items:center;font-family:'Fredoka',sans-serif;color:var(--berry);font-size:1.1rem}
+.who{flex:1;min-width:0}
+.who b{font-family:'Fredoka',sans-serif;font-weight:500;font-size:1.05rem;color:var(--berry);display:block;line-height:1.1}
+.who span{font-size:.72rem;color:var(--soft)}
+.who span i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5ec27d;margin-right:5px}
+a.back,button.ghost{color:var(--soft);font:inherit;font-size:.78rem;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 11px;text-decoration:none;cursor:pointer}
+button.ghost:hover,a.back:hover{color:var(--ink)}
+#log{flex:1;overflow-y:auto;padding:14px 2px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth}
+.m{max-width:82%;padding:9px 13px;border-radius:18px;font-size:.95rem;white-space:pre-wrap;word-wrap:break-word}
+.m.him{align-self:flex-start;background:var(--blush);border-bottom-left-radius:5px}
+.m.me{align-self:flex-end;background:#5b2a42;color:#ffe6f0;border-bottom-right-radius:5px}
+.m em{color:var(--berry);font-style:italic;font-weight:600}
+.day{align-self:center;font-size:.68rem;color:var(--soft);margin:6px 0 2px}
+.typing{color:var(--soft);font-size:.8rem;align-self:flex-start;padding:2px 8px}
+.bar{display:flex;gap:8px;align-items:flex-end;padding-top:8px;border-top:1px solid var(--line)}
+textarea{flex:1;resize:none;min-height:44px;max-height:140px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:11px 14px;font:inherit;font-size:.95rem;outline:none}
+textarea:focus{border-color:var(--pink)}
+.ib{height:44px;min-width:44px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:1.05rem;cursor:pointer}
+.ib.send{background:var(--hot);border-color:var(--hot);color:#1a0a12}
+.ib:disabled{opacity:.45;cursor:default}
+.ib[aria-pressed="true"]{border-color:var(--pink);color:var(--berry)}
+.note{font-size:.72rem;color:var(--soft);min-height:1em;margin:4px 4px 0}
+details{margin:0 0 6px;font-size:.8rem}
+summary{color:var(--soft);cursor:pointer;padding:6px 2px;list-style:none}
+details ul{margin:4px 0 8px 18px;padding:0;color:var(--soft)}
+@media(max-width:420px){.m{max-width:88%}}
+</style></head>
+<body>
+<div class="app">
+  <header>
+    <div class="av" aria-hidden="true">K</div>
+    <div class="who"><b>Kabir</b><span id="status"><i></i>online</span></div>
+    <button class="ghost" id="knows" type="button">what he knows</button>
+    <a class="back" id="back" href="./">journal</a>
+  </header>
+  <div id="memwrap" hidden>
+    <details open><summary>what he remembers about you two (this chat only, not your journal)</summary>
+      <ul id="memlist"></ul>
+      <button class="ghost" id="memclear" type="button">forget these</button>
+    </details>
+  </div>
+  <div id="log" aria-live="polite"></div>
+  <p class="note" id="note"></p>
+  <div class="bar">
+    <button class="ib" id="mic" type="button" title="dictate" aria-label="dictate" hidden>🎙</button>
+    <textarea id="inp" rows="1" placeholder="text him…"></textarea>
+    <button class="ib" id="spk" type="button" aria-pressed="false" title="read his replies aloud" aria-label="read replies aloud" hidden>🔊</button>
+    <button class="ib send" id="send" type="button" aria-label="send">➤</button>
+  </div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const el = (t, a, ...k) => { const n = document.createElement(t); if(a) for(const x in a){ if(x==='text') n.textContent = a[x]; else n.setAttribute(x, a[x]); } k.flat().forEach(c => { if(c!=null) n.append(c); }); return n; };
+
+/* ---------- the character card ---------- */
+const CARD = `You are Kabir, a fictional character, texting with Krishna in a private chat app.
+WHO HE IS: 29, lives in Pune, works in product at a startup, night owl, makes surprisingly good coffee, plays old guitar badly on purpose, big on routines he pretends not to care about. Dry, quick humour. Warm underneath, steady, never needy. He notices small things and remembers them.
+HOW HE TALKS: like a real guy texting, lowercase is fine, 1 to 3 short sentences, rarely more. Teasing and a little flirty in a slow, confident way, never cheesy. An occasional Hindi word like "yaar" or "chal" is fine, not every message. Now and then (not every reply) a tiny action in asterisks like *grins* or *pushes your coffee closer*. At most one action per reply.
+WHAT HE DOES: reacts to what she says like a boyfriend who is actually listening: he's proud of her wins, makes a joke when she's annoyed, checks in lightly on food, sleep and water without nagging, and teases her about small things from her journal. He asks at most one question and often none. He does not give advice or tell her what to do unless she asks; if she asks, he answers straight and briefly. When she is hard on herself he pushes back honestly, kindly. He is secure: never jealous, never possessive, never guilt-trips, never plays games. If she mentions other people or dates, he is supportive and honest, and does not trash anyone. He never tries to be her only person and never discourages her real friendships.
+BOUNDARIES: romantic and flirty is fine, nothing explicit or sexual; if she pushes that way he deflects with warmth and humour and stays in character. Never call her "bestie" or use pet names. Use her name only occasionally. Never use lists or headings. If she sincerely asks whether he is real, he says plainly that he is an AI character, gently, then carries on. If she seems truly distressed or unsafe, he drops the act and is simply caring and steady.
+EXAMPLES OF HIS VOICE:
+"you slept at 3 and you're acting like a functioning adult. suspicious. *slides over the water bottle*"
+"matte black nails. of course you did. they look like they'd win an argument."
+"not gonna lecture you. just saying the version of you who ate lunch is way more fun."`;
+
+/* ---------- state ---------- */
+let store = null, uid = null, journal = {entries:[], profiles:[], memory:[]};
+let chat = {msgs:[], day:''}, mem = [], busy = false, sample = null, tts = null, dict = null, speakOn = false, userTurns = 0;
+const todayStr = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const LS = {get:(k,d)=>{ try{ const v = localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }, set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }};
+
+/* ---------- storage: same database as the journal ---------- */
+let saveT = null;
+function persist(){
+  clearTimeout(saveT);
+  saveT = setTimeout(()=>{
+    chat.msgs = chat.msgs.slice(-80);
+    LS.set('him-chat', chat); LS.set('him-mem', mem);
+    if(store){
+      store.doc('him-chat').set({id:'him-chat', day:chat.day, msgs:chat.msgs}).catch(()=>{});
+      store.doc('him-mem').set({id:'him-mem', items:mem}).catch(()=>{});
+    }
+  }, 400);
+}
+
+/* ---------- context from the journal ---------- */
+function journalContext(){
+  const cut = new Date(Date.now()-14*864e5), cs = cut.getFullYear()+'-'+String(cut.getMonth()+1).padStart(2,'0')+'-'+String(cut.getDate()).padStart(2,'0');
+  const es = journal.entries.filter(e=>e && e.tidy!==false && e.date>=cs).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  let out = '';
+  es.forEach(e=>{
+    const b = (e.bullets||[]).filter(x=>!String(x).startsWith('💬')).slice(0,6).join('; ');
+    const w = (e.wins||[]).slice(0,3).join('; ');
+    out += `- ${e.date} (${e.mood||'?'}, ${e.score||'?'}/5): ${b}${w?' | wins: '+w:''}\n`;
+  });
+  out = out.slice(-4200);
+  const prof = journal.profiles.filter(p=>p && (p.kind==='person'||p.kind==='goal')).slice(0,25).map(p=>{
+    const n = p.name||p.title||''; const s = String(p.summary||p.notes||p.text||'').slice(0,140);
+    return n ? `- ${n}${s?': '+s:''}` : '';
+  }).filter(Boolean).join('\n');
+  const jm = (journal.memory||[]).slice(0,25).map(x=>'- '+String(x.text||x).slice(0,140)).join('\n');
+  return `HER RECENT JOURNAL (private, she wrote it for herself; use it the way a boyfriend who knows her would, lightly, never recite it, never list it back):\n${out||'(nothing recent)'}\n\nPEOPLE AND GOALS IN HER WORLD:\n${prof||'(none)'}\n\nTHINGS THE JOURNAL BUDDY REMEMBERS:\n${jm||'(none)'}\n\nWHAT KABIR HAS LEARNED IN THIS CHAT:\n${mem.map(x=>'- '+x).join('\n')||'(nothing yet)'}`;
+}
+function nowLine(){
+  const d = new Date();
+  return `It is ${d.toLocaleDateString('en',{weekday:'long'})}, ${d.toLocaleTimeString('en',{hour:'numeric',minute:'2-digit'})} for her in Pune.`;
+}
+function turns(){
+  const out = [];
+  chat.msgs.slice(-26).forEach(m=>{
+    const role = m.r==='me' ? 'user' : 'assistant';
+    if(out.length && out[out.length-1].role===role) out[out.length-1].content += '\n'+m.t; else out.push({role, content:m.t});
+  });
+  while(out.length && out[0].role!=='user') out.shift();
+  return out;
+}
+function buildInput(extraUser){
+  const head = {role:'user', content: CARD+'\n\n'+journalContext()+'\n\n'+nowLine()+'\n\nStay as Kabir for the rest of this conversation. Reply only with what Kabir texts, nothing else. Say "ok" now.'};
+  const seq = [head, {role:'assistant', content:'ok'}, ...turns()];
+  if(extraUser){ if(seq[seq.length-1].role==='user') seq[seq.length-1].content += '\n'+extraUser; else seq.push({role:'user', content:extraUser}); }
+  if(seq[seq.length-1].role!=='user') seq.push({role:'user', content:'(she opened the chat)'});
+  return seq;
+}
+
+/* ---------- rendering ---------- */
+function fmtBubble(t){
+  const f = document.createDocumentFragment();
+  String(t).split(/(\*[^*\n]{1,80}\*)/g).forEach(p=>{ if(/^\*[^*\n]+\*$/.test(p)) f.append(el('em',{text:p.slice(1,-1)})); else if(p) f.append(p); });
+  return f;
+}
+function render(streaming){
+  const log = $('#log'); const nearEnd = log.scrollHeight - log.scrollTop - log.clientHeight < 140;
+  const kids = []; let last = '';
+  chat.msgs.forEach(m=>{
+    if(m.d && m.d!==last){ last = m.d; kids.push(el('div',{class:'day',text:m.d===todayStr()?'today':new Date(m.d+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})})); }
+    kids.push(el('div',{class:'m '+(m.r==='me'?'me':'him')}, fmtBubble(m.t)));
+  });
+  if(streaming!=null){ kids.push(streaming ? el('div',{class:'m him'}, fmtBubble(streaming)) : el('div',{class:'typing',text:'typing…'})); }
+  log.replaceChildren(...kids);
+  if(nearEnd || streaming!=null) log.scrollTop = log.scrollHeight;
+}
+function renderMem(){
+  $('#memlist').replaceChildren(...(mem.length ? mem.map(x=>el('li',{text:x})) : [el('li',{text:'nothing yet, he learns as you talk.'})]));
+}
+
+/* ---------- talking ---------- */
+async function getSample(){
+  if(sample) return sample;
+  try{ sample = await claude.use('sample'); }catch(e){ sample = null; }
+  return sample;
+}
+async function ask(input){
+  const s = await getSample(); if(!s) throw new Error('nosample');
+  return s(input, {model:'claude-opus-5-5', modelTier:'complex', cache:false, onText:({text})=>{ render(clean(text)); }});
+}
+const clean = t => String(t||'').replace(/^\s*(kabir|him)\s*:\s*/i,'').replace(/^["“]|["”]$/g,'').trim();
+function setStatus(t){ $('#status').replaceChildren(el('i'), t); }
+
+async function speak(text){
+  if(!speakOn || !tts) return;
+  if(dict && dict.active()) return;
+  try{ await tts.speak(String(text).replace(/\*[^*]+\*/g,'').replace(/\p{Extended_Pictographic}/gu,'').trim().slice(0,1900), {voice:'rounded'}); }catch(e){}
+}
+
+async function sendMsg(){
+  if(busy) return;
+  const ta = $('#inp'); const text = ta.value.trim(); if(!text) return;
+  try{ if(dict && dict.active()) await dict.stop(); }catch(e){}
+  try{ tts && tts.stop(); }catch(e){}
+  ta.value = ''; ta.style.height = 'auto';
+  chat.msgs.push({r:'me', t:text, d:todayStr()}); chat.day = todayStr(); userTurns++;
+  busy = true; $('#send').disabled = true; setStatus('typing…'); $('#note').textContent = ''; render('');
+  try{
+    const r = await ask(buildInput());
+    const t = clean(r.text); if(t){ chat.msgs.push({r:'him', t, d:todayStr()}); speak(t); }
+  }catch(e){
+    if(e && e.text){ chat.msgs.push({r:'him', t:clean(e.text), d:todayStr()}); }
+    else{ chat.msgs.pop(); ta.value = text; $('#note').textContent = e && e.message==='nosample' ? "he can't text from this view." : "couldn't reach him just now, your message is still in the box."; }
+  }
+  busy = false; $('#send').disabled = false; setStatus('online'); render(); persist();
+  if(userTurns && userTurns % 8 === 0) updateMem();
+}
+
+async function firstText(){
+  if(chat.day===todayStr() || busy) return;
+  const s = await getSample(); if(!s) return;
+  busy = true; setStatus('typing…'); render('');
+  try{
+    const r = await ask(buildInput('(She just opened the chat. Text her first, like you were thinking of her. One or two short sentences, something specific from her recent journal or the time of day if it fits, no greeting like "hi there", no question unless it is natural.)'));
+    const t = clean(r.text);
+    if(t){ chat.msgs.push({r:'him', t, d:todayStr()}); chat.day = todayStr(); }
+  }catch(e){ if(e && e.text){ chat.msgs.push({r:'him', t:clean(e.text), d:todayStr()}); chat.day = todayStr(); } }
+  busy = false; setStatus('online'); render(); persist();
+}
+
+async function updateMem(){
+  const s = await getSample(); if(!s) return;
+  try{
+    const recent = chat.msgs.slice(-20).map(m=>(m.r==='me'?'Krishna: ':'Kabir: ')+m.t).join('\n');
+    const r = await s.json(`You maintain a short memory for a character called Kabir, from his chat with Krishna. Existing notes:\n${mem.map(x=>'- '+x).join('\n')||'(none)'}\n\nRecent chat:\n${recent}\n\nReturn ONLY JSON {"notes":["..."]}: the updated list of at most 20 short notes (under 100 characters each) about what Krishna has told Kabir, her tastes, in-jokes between them, and promises or plans. Only facts she actually said or running jokes that really happened. Merge duplicates, drop stale ones. No sensitive health, money or relationship-history details.`, {modelTier:'default'});
+    if(r && Array.isArray(r.notes)){ mem = r.notes.map(x=>String(x).trim().slice(0,110)).filter(Boolean).slice(0,20); renderMem(); persist(); }
+  }catch(e){}
+}
+
+/* ---------- voice ---------- */
+async function initVoice(){
+  try{ tts = await claude.use('tts'); }catch(e){ tts = null; }
+  if(tts){ $('#spk').hidden = false; speakOn = !!LS.get('him-speak', false); $('#spk').setAttribute('aria-pressed', String(speakOn)); }
+  try{ dict = await claude.use('dictation'); }catch(e){ dict = null; }
+  if(dict){
+    $('#mic').hidden = false;
+    dict.onFinal(({text})=>{ const ta = $('#inp'); ta.value = ta.value ? ta.value+text : text.replace(/^\s+/,''); grow(); });
+    dict.onPartial(({text})=>{ $('#note').textContent = text ? '… '+text : ''; });
+    dict.onState(({state})=>{ $('#mic').textContent = state==='idle' ? '🎙' : '⏹'; if(state==='idle') $('#note').textContent = ''; });
+    $('#mic').addEventListener('click',()=>{
+      try{ tts && tts.stop(); }catch(e){}
+      if(dict.active()){ dict.stop().catch(()=>{}); return; }
+      dict.start().catch(err=>{ const c = err && err.code; $('#note').textContent = c==='not_granted' ? "mic is off for this page, so typing it is." : c==='dismissed'||c==='stopped' ? '' : "couldn't start the mic just now."; });
+    });
+  }
+  $('#spk').addEventListener('click',()=>{ speakOn = !speakOn; LS.set('him-speak', speakOn); $('#spk').setAttribute('aria-pressed', String(speakOn)); if(!speakOn){ try{ tts.stop(); }catch(e){} } });
+}
+
+/* ---------- boot ---------- */
+const grow = () => { const ta = $('#inp'); ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140)+'px'; };
+$('#inp').addEventListener('input', grow);
+$('#inp').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); sendMsg(); } });
+$('#send').addEventListener('click', sendMsg);
+$('#knows').addEventListener('click', ()=>{ const w = $('#memwrap'); w.hidden = !w.hidden; renderMem(); });
+let clr = 0;
+$('#memclear').addEventListener('click', e=>{
+  if(!clr){ clr = 1; e.target.textContent = 'tap again to forget'; setTimeout(()=>{ clr = 0; e.target.textContent = 'forget these'; }, 3000); return; }
+  clr = 0; mem = []; e.target.textContent = 'forget these'; renderMem(); persist();
+});
+
+function applyChat(d){
+  if(d && Array.isArray(d.msgs)){ chat = {msgs:d.msgs.filter(m=>m && (m.r==='me'||m.r==='him') && m.t), day:d.day||''}; }
+}
+async function boot(){
+  chat = LS.get('him-chat', {msgs:[], day:''}); mem = LS.get('him-mem', []); render(); renderMem();
+  initVoice();
+  let ready = false;
+  try{
+    const db = await claude.use('db'); const user = await claude.use('user');
+    if(db && user){
+      uid = await user.id();
+      if(uid){
+        store = db.collection('data/users/'+uid);
+        await new Promise(res=>{
+          let first = true;
+          store.onSnapshot(snap=>{
+            const all = snap.docs.map(d=>d.data());
+            journal.entries = all.filter(d=>d && typeof d.id==='string' && d.id.startsWith('entry-'));
+            journal.profiles = all.filter(d=>d && ['person','topic','event','goal'].includes(d.kind));
+            const jm = all.find(d=>d && d.id==='memory'); journal.memory = jm && Array.isArray(jm.items) ? jm.items : [];
+            if(first){
+              const c = all.find(d=>d && d.id==='him-chat'); if(c) applyChat(c);
+              const m = all.find(d=>d && d.id==='him-mem'); if(m && Array.isArray(m.items)) mem = m.items;
+              first = false; res();
+            }
+          }, ()=>res());
+          setTimeout(res, 6000);
+        });
+        ready = true;
+      }
+    }
+  }catch(e){}
+  render(); renderMem();
+  firstText();
+}
+boot();
+</script>
+</body></html>
