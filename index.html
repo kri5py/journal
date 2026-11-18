@@ -983,7 +983,7 @@ async function sendChat(){
     const r = await sample(chatTurns(), {model:'claude-opus-5-5', modelTier:'complex', onText:({text})=>{ streamText = text; renderChat(); }});
     chat.push({role:'assistant',content:r.text});
     if(/went well|good thing|bright spot|win today|good today/i.test(r.text||'')){ try{ localStorage.setItem('journal-nudge-date', todayStr()); }catch(err){} }
-    if(TTS && ($('#chatread').checked || callMode)) speak(r.text,'chat', callMode ? callNext : undefined);
+    if(TTS && ($('#chatread').checked || callMode)) { lastSpoken = new Set(String(r.text||'').toLowerCase().match(/[\p{L}']+/gu) || []); speak(r.text,'chat', callMode ? callNext : undefined); }
   }catch(e){
     if(e && e.text){ chat.push({role:'assistant',content:e.text}); }
     else { chat.pop(); ta.value = text; $('#chatstatus').textContent = "couldn't reach chat right now, your message is still in the box."; }
@@ -994,7 +994,21 @@ async function sendChat(){
 }
 /* ---------- voice: dictation + call mode ---------- */
 let dict = null, dictTarget = 'chatin', callMode = false, silenceT = null, ignoreUntil = 0;
-const callDeaf = () => callMode && dictTarget==='chatin' && (chatBusy || speakingKey==='chat' || Date.now()<ignoreUntil);
+let lastSpoken = new Set();
+function isBarge(text){
+  const w = String(text).toLowerCase().match(/[\p{L}']+/gu) || [];
+  if(w.length<2) return false;
+  return w.filter(x=>lastSpoken.has(x)).length / w.length < 0.5;
+}
+function callDeaf(text){
+  if(!(callMode && dictTarget==='chatin')) return false;
+  if(chatBusy || Date.now()<ignoreUntil) return true;
+  if(speakingKey==='chat'){
+    if(text && isBarge(text)){ stopSpeak(); ignoreUntil = 0; $('#chatin').value = ''; $('#dl-chat').textContent = 'listening…'; return false; }
+    return true;
+  }
+  return false;
+}
 const dlFor = () => $(dictTarget==='raw' ? '#dl-raw' : '#dl-chat');
 function micLabels(){
   const on = dict && dict.active();
@@ -1029,9 +1043,9 @@ async function initDictation(){
   try{ dict = await claude.use('dictation'); }catch(e){ dict = null; }
   if(!dict) return;
   $('#voicebtns').hidden = false; $('#mic-raw').hidden = false;
-  dict.onPartial(({text})=>{ if(callDeaf()) return; const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
+  dict.onPartial(({text})=>{ if(callDeaf(text)) return; const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
   dict.onFinal(({text})=>{
-    if(callDeaf()) return;
+    if(callDeaf(text)) return;
     const ta = $(dictTarget==='raw' ? '#raw' : '#chatin'); if(!ta) return;
     ta.value = ta.value ? ta.value + text : text.replace(/^\s+/,'');
     const n = dlFor(); if(n) n.textContent = ''; bumpSilence();
