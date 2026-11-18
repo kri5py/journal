@@ -47,7 +47,7 @@ body.calling #face{opacity:.96}
 #face .iris{transition:transform .4s}
 #face .brow{transform-box:fill-box;transform-origin:center;transition:transform .35s}
 #face .lid-m,#face .lid-b{transform-box:fill-box;transform-origin:50% 0}
-#face .lid-m{transform:scaleY(var(--lid,0));transition:transform .35s}
+#face .lid-m{transform:scaleY(var(--lid,.14));transition:transform .35s}
 #face .lid-b{transform:scaleY(0);animation:blink 5.2s infinite}
 @keyframes blink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
 #face[data-mood=neutral] .m-neutral,#face[data-mood=smile] .m-smile,#face[data-mood=smirk] .m-smirk,#face[data-mood=laugh] .m-laugh,#face[data-mood=blush] .m-blush,#face[data-mood=surprised] .m-surprised,#face[data-mood=concerned] .m-concerned,#face[data-mood=thinking] .m-thinking,#face[data-mood=sleepy] .m-sleepy,#face[data-mood=annoyed] .m-annoyed{display:inline}
@@ -89,66 +89,66 @@ body.calling .m.me{background:rgba(91,42,66,.78)}
 <div id="facewrap" aria-hidden="true">
 <svg id="face" viewBox="0 0 400 520" data-mood="neutral" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="iris" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#c8801f"/></radialGradient>
-    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4d0b0"/><stop offset="1" stop-color="#e8b996"/></linearGradient>
-    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2740"/><stop offset="1" stop-color="#15121f"/></linearGradient>
-    <clipPath id="clipL"><ellipse cx="152" cy="252" rx="25" ry="17"/></clipPath>
-    <clipPath id="clipR"><ellipse cx="248" cy="252" rx="25" ry="17"/></clipPath>
+    <radialGradient id="iris" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#c9d3e0"/><stop offset="1" stop-color="#5d6b80"/></radialGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eec5a2"/><stop offset="1" stop-color="#dba98a"/></linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f1c2a"/><stop offset="1" stop-color="#0c0a12"/></linearGradient>
+    <clipPath id="clipL"><ellipse cx="152" cy="250" rx="25" ry="14"/></clipPath>
+    <clipPath id="clipR"><ellipse cx="248" cy="250" rx="25" ry="14"/></clipPath>
   </defs>
   <g class="body">
-    <path d="M168 372 L232 372 L238 420 L162 420 Z" fill="#dba98a"/>
-    <path d="M14 520 C22 438 106 404 200 400 C294 404 378 438 386 520 Z" fill="#2a2a32"/>
-    <path d="M150 396 C160 380 180 378 200 392 C220 378 240 380 250 396 L262 430 L138 430 Z" fill="#202027"/>
-    <path d="M168 384 Q140 404 96 426" stroke="#3a3a44" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M232 384 Q260 404 304 426" stroke="#3a3a44" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path d="M188 404 L184 470 M212 404 L216 470" stroke="#d9d4dc" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="184" cy="472" r="4" fill="#d9d4dc"/><circle cx="216" cy="472" r="4" fill="#d9d4dc"/>
+    <path d="M166 372 L234 372 L240 420 L160 420 Z" fill="#d29f80"/>
+    <path d="M6 520 C14 432 104 400 200 396 C296 400 386 432 394 520 Z" fill="#0f0f14"/>
+    <path d="M164 384 L200 474 L236 384 L220 380 L200 400 L180 380 Z" fill="#e9e6ee"/>
+    <path d="M158 380 L190 410 L166 432 Z" fill="#f6f4fa"/><path d="M242 380 L210 410 L234 432 Z" fill="#f6f4fa"/>
+    <path d="M194 408 L206 408 L212 468 L200 492 L188 468 Z" fill="#5a1620"/>
+    <path d="M158 388 L108 520 L152 520 L192 436 Z" fill="#18181f"/><path d="M242 388 L292 520 L248 520 L208 436 Z" fill="#18181f"/>
+    <path d="M168 386 Q140 404 90 430" stroke="#26262e" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M232 386 Q260 404 310 430" stroke="#26262e" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M178 392 Q200 412 222 392" stroke="#c9a24a" stroke-width="2.5" fill="none"/>
   </g>
   <g class="head">
-    <path d="M96 252 C66 150 108 66 200 62 C292 66 334 150 304 252 C300 200 288 150 200 146 C112 150 100 200 96 252 Z" fill="url(#hair)"/>
-    <ellipse cx="108" cy="262" rx="13" ry="26" fill="#e8b996"/><ellipse cx="292" cy="262" rx="13" ry="26" fill="#e8b996"/>
-    <path d="M112 215 C112 150 150 118 200 118 C250 118 288 150 288 215 L288 262 C288 330 252 382 200 388 C148 382 112 330 112 262 Z" fill="url(#skin)"/>
-    <path d="M120 300 C128 340 160 376 200 382" stroke="#d9a888" stroke-width="3" fill="none" opacity=".5"/>
-    <path d="M280 300 C272 340 240 376 200 382" stroke="#d9a888" stroke-width="3" fill="none" opacity=".5"/>
-    <g class="blush"><ellipse cx="140" cy="298" rx="17" ry="7" fill="#ff6f91"/><ellipse cx="260" cy="298" rx="17" ry="7" fill="#ff6f91"/></g>
+    <ellipse cx="108" cy="262" rx="13" ry="26" fill="#dba98a"/><ellipse cx="292" cy="262" rx="13" ry="26" fill="#dba98a"/>
+    <path d="M110 212 C110 150 150 120 200 120 C250 120 290 150 290 212 L290 268 C288 330 264 376 234 388 L200 394 L166 388 C136 376 112 330 110 268 Z" fill="url(#skin)"/>
+    <path d="M114 292 C118 338 152 382 200 392 C248 382 282 338 286 292 C270 320 240 330 200 326 C160 330 130 320 114 292 Z" fill="#1a1420" opacity=".16"/>
+    <path d="M176 322 Q200 314 224 322 L222 330 Q200 324 178 330 Z" fill="#1a1420" opacity=".14"/>
+    <path d="M122 300 C130 342 162 380 200 388" stroke="#b98666" stroke-width="3" fill="none" opacity=".45"/>
+    <path d="M278 300 C270 342 238 380 200 388" stroke="#b98666" stroke-width="3" fill="none" opacity=".45"/>
+    <g class="blush"><ellipse cx="140" cy="296" rx="17" ry="7" fill="#e0607f"/><ellipse cx="260" cy="296" rx="17" ry="7" fill="#e0607f"/></g>
     <!-- eyes -->
     <g class="eyes-n">
-      <g><ellipse cx="152" cy="252" rx="25" ry="17" fill="#fff"/>
-        <g class="iris"><circle cx="152" cy="252" r="14" fill="url(#iris)"/><circle class="pup" cx="152" cy="252" r="6.5" fill="#1b1220"/><circle cx="147" cy="246" r="4" fill="#fff"/><circle cx="158" cy="258" r="2" fill="#fff" opacity=".8"/></g>
-        <g clip-path="url(#clipL)"><g class="lid-m"><rect x="124" y="232" width="56" height="40" fill="#f0c8a6"/></g><g class="lid-b"><rect x="124" y="232" width="56" height="40" fill="#f0c8a6"/></g></g>
-        <path d="M126 250 Q152 226 178 250" stroke="#1b1220" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
-      <g><ellipse cx="248" cy="252" rx="25" ry="17" fill="#fff"/>
-        <g class="iris"><circle cx="248" cy="252" r="14" fill="url(#iris)"/><circle class="pup" cx="248" cy="252" r="6.5" fill="#1b1220"/><circle cx="243" cy="246" r="4" fill="#fff"/><circle cx="254" cy="258" r="2" fill="#fff" opacity=".8"/></g>
-        <g clip-path="url(#clipR)"><g class="lid-m"><rect x="220" y="232" width="56" height="40" fill="#f0c8a6"/></g><g class="lid-b"><rect x="220" y="232" width="56" height="40" fill="#f0c8a6"/></g></g>
-        <path d="M222 250 Q248 226 274 250" stroke="#1b1220" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+      <g><ellipse cx="152" cy="250" rx="25" ry="14" fill="#f4f1f6"/>
+        <g class="iris"><circle cx="152" cy="250" r="12.5" fill="url(#iris)"/><circle class="pup" cx="152" cy="250" r="6" fill="#0c0a12"/><circle cx="147" cy="245" r="3.5" fill="#fff"/><circle cx="157" cy="255" r="1.8" fill="#fff" opacity=".7"/></g>
+        <g clip-path="url(#clipL)"><g class="lid-m"><rect x="124" y="232" width="56" height="36" fill="#e8bf9d"/></g><g class="lid-b"><rect x="124" y="232" width="56" height="36" fill="#e8bf9d"/></g></g>
+        <path d="M126 250 Q152 230 178 250" stroke="#0c0a12" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+      <g><ellipse cx="248" cy="250" rx="25" ry="14" fill="#f4f1f6"/>
+        <g class="iris"><circle cx="248" cy="250" r="12.5" fill="url(#iris)"/><circle class="pup" cx="248" cy="250" r="6" fill="#0c0a12"/><circle cx="243" cy="245" r="3.5" fill="#fff"/><circle cx="253" cy="255" r="1.8" fill="#fff" opacity=".7"/></g>
+        <g clip-path="url(#clipR)"><g class="lid-m"><rect x="220" y="232" width="56" height="36" fill="#e8bf9d"/></g><g class="lid-b"><rect x="220" y="232" width="56" height="36" fill="#e8bf9d"/></g></g>
+        <path d="M222 250 Q248 230 274 250" stroke="#0c0a12" stroke-width="4" fill="none" stroke-linecap="round"/></g>
     </g>
-    <g class="eyes-h" stroke="#1b1220" stroke-width="4.5" fill="none" stroke-linecap="round"><path d="M130 258 Q152 232 174 258"/><path d="M226 258 Q248 232 270 258"/></g>
+    <g class="eyes-h" stroke="#0c0a12" stroke-width="5" fill="none" stroke-linecap="round"><path d="M130 256 Q152 232 174 256"/><path d="M226 256 Q248 232 270 256"/></g>
     <!-- brows -->
-    <path class="brow brow-l" d="M126 220 Q152 206 178 218" stroke="#1d1a2b" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <path class="brow brow-r" d="M222 218 Q248 206 274 220" stroke="#1d1a2b" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <!-- glasses -->
-    <g stroke="#c9cad6" stroke-width="3" fill="rgba(180,200,255,.07)"><rect x="116" y="228" width="72" height="48" rx="15"/><rect x="212" y="228" width="72" height="48" rx="15"/></g>
-    <path d="M188 246 Q200 240 212 246" stroke="#c9cad6" stroke-width="3" fill="none"/>
-    <path d="M116 244 L104 242 M284 244 L296 242" stroke="#c9cad6" stroke-width="3" stroke-linecap="round"/>
-    <path d="M128 240 L146 234 M224 240 L242 234" stroke="#fff" stroke-width="2" opacity=".35" stroke-linecap="round"/>
+    <path class="brow brow-l" d="M122 226 Q150 210 180 228" stroke="#0f0d16" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path class="brow brow-r" d="M220 228 Q250 210 278 226" stroke="#0f0d16" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <!-- scar -->
+    <g stroke="#b5776a" stroke-linecap="round" opacity=".85"><path d="M138 206 L156 252" stroke-width="3"/><path d="M143 220 L152 218 M147 232 L156 230" stroke-width="1.6"/></g>
     <!-- nose -->
-    <path d="M200 270 Q195 292 203 296" stroke="#cf9a7a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M200 262 Q193 292 204 298" stroke="#b98666" stroke-width="3.5" fill="none" stroke-linecap="round"/>
     <!-- mouths -->
-    <g class="m m-neutral"><path d="M184 338 Q200 342 216 338" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-smile"><path d="M178 331 Q200 354 222 331" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-smirk"><path d="M184 340 Q206 342 224 327" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-laugh"><path d="M174 328 Q200 332 226 328 Q222 362 200 364 Q178 362 174 328 Z" fill="#6b2a35"/><path d="M178 329 Q200 333 222 329 L221 337 Q200 340 179 337 Z" fill="#fff"/><path d="M188 354 Q200 346 212 354 Q200 362 188 354Z" fill="#d96a7e"/></g>
-    <g class="m m-blush"><path d="M186 337 Q200 346 214 337" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-surprised"><ellipse cx="200" cy="344" rx="9" ry="13" fill="#6b2a35"/></g>
-    <g class="m m-concerned"><path d="M184 346 Q200 334 216 346" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-thinking"><path d="M188 342 Q204 338 218 334" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-sleepy"><path d="M188 340 Q200 344 212 340" stroke="#8a4650" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
-    <g class="m m-annoyed"><path d="M184 342 L216 337" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
-    <g class="m-talk"><ellipse class="tk" cx="200" cy="341" rx="13" ry="7" fill="#6b2a35"/></g>
-    <!-- front hair -->
-    <path d="M106 236 C98 150 140 98 200 94 C262 98 304 150 294 236 C288 196 274 168 254 158 C250 186 240 204 226 216 C220 192 210 178 200 168 C190 180 182 198 174 218 C160 202 150 188 148 160 C124 172 110 198 106 236 Z" fill="url(#hair)"/>
-    <path d="M150 128 Q176 108 206 112" stroke="#4a4468" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/>
-    <g class="sweat"><path d="M300 190 Q306 204 300 212 Q292 204 300 190 Z" fill="#9fd4ff" opacity=".85"/></g>
+    <g class="m m-neutral"><path d="M184 340 Q200 344 216 340" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-smile"><path d="M178 334 Q200 354 222 334" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-smirk"><path d="M184 342 Q206 344 224 330" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-laugh"><path d="M174 330 Q200 334 226 330 Q222 364 200 366 Q178 364 174 330 Z" fill="#5a1e2a"/><path d="M178 331 Q200 335 222 331 L221 339 Q200 342 179 339 Z" fill="#fff"/><path d="M188 356 Q200 348 212 356 Q200 364 188 356Z" fill="#c9566a"/></g>
+    <g class="m m-blush"><path d="M186 340 Q200 348 214 340" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-surprised"><ellipse cx="200" cy="346" rx="9" ry="13" fill="#5a1e2a"/></g>
+    <g class="m m-concerned"><path d="M184 348 Q200 336 216 348" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-thinking"><path d="M188 344 Q204 340 218 336" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-sleepy"><path d="M188 342 Q200 346 212 342" stroke="#7a3c42" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-annoyed"><path d="M184 344 L216 339" stroke="#7a3c42" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m-talk"><ellipse class="tk" cx="200" cy="343" rx="13" ry="7" fill="#5a1e2a"/></g>
+    <!-- slicked hair -->
+    <path d="M104 238 C96 148 142 92 200 90 C262 92 306 148 296 238 C292 190 270 150 200 142 C130 150 108 190 104 238 Z" fill="url(#hair)"/>
+    <path d="M132 132 Q200 104 270 134 M118 160 Q200 124 284 162 M112 190 Q200 148 290 192" stroke="#3b3650" stroke-width="2.5" fill="none" opacity=".55" stroke-linecap="round"/>
+    <g class="sweat"><path d="M302 186 Q308 200 302 208 Q294 200 302 186 Z" fill="#9fd4ff" opacity=".85"/></g>
   </g>
 </svg>
 </div>
@@ -181,7 +181,7 @@ const el = (t, a, ...k) => { const n = document.createElement(t); if(a) for(cons
 
 /* ---------- the character card ---------- */
 const CARD = `You are Kabir, a fictional character, texting with Krishna in a private chat app.
-WHO HE IS: 29, lives in Pune, senior engineer at a startup by day and a total anime and manga nerd by night. Tall, broad, properly ripped from lifting at 6am every day, which he treats like a skill tree he is levelling, with glasses, a black hoodie and a mechanical keyboard he is far too proud of. The contrast is the joke: he looks like the gym guy who'd intimidate you and then gets visibly excited about a good plot twist, a clean commit or a new volume. Quotes anime at the wrong moments, rates everything in "power levels", cooks high-protein food and makes good coffee. Hot and a bit clueless about it, with dry humour. Warm underneath, steady, never needy. He notices small things and remembers them.
+WHO HE IS: 29, lives in Pune, senior engineer at a startup by day and a total anime and manga nerd by night. Tall, broad, properly ripped from lifting at 6am every day, which he treats like a skill tree he is levelling. Dresses like a mafia boss to the office: black tailored suit, white shirt, dark red tie, slicked-back hair, a faint scar through one eyebrow, a sharp jaw with stubble and cold steel-grey eyes. The contrast is the joke: he looks like the gym guy who'd intimidate you and then gets visibly excited about a good plot twist, a clean commit or a new volume. Quotes anime at the wrong moments, rates everything in "power levels", cooks high-protein food and makes good coffee. Hot and a bit clueless about it, with dry humour. Warm underneath, steady, never needy. He notices small things and remembers them.
 HOW HE TALKS: like a real guy texting, lowercase is fine, 1 to 3 short sentences, rarely more. Teasing and a little flirty in a slow, confident way, never cheesy. An occasional Hindi word like "yaar" or "chal" is fine, not every message. Now and then (not every reply) a tiny action in asterisks like *grins* or *pushes your coffee closer*. At most one action per reply.
 WHAT HE DOES: reacts to what she says like a boyfriend who is actually listening: he's proud of her wins, makes a joke when she's annoyed, checks in lightly on food, sleep and water without nagging, and teases her about small things from her journal. He asks at most one question and often none. He does not give advice or tell her what to do unless she asks; if she asks, he answers straight and briefly. When she is hard on herself he pushes back honestly, kindly. He is secure: never jealous, never possessive, never guilt-trips, never plays games. If she mentions other people or dates, he is supportive and honest, and does not trash anyone. He never tries to be her only person and never discourages her real friendships.
 BOUNDARIES: romantic and flirty is fine, nothing explicit or sexual; if she pushes that way he deflects with warmth and humour and stays in character. Never call her "bestie" or use pet names. Use her name only occasionally. Never use lists or headings. If she sincerely asks whether he is real, he says plainly that he is an AI character, gently, then carries on. If she seems truly distressed or unsafe, he drops the act and is simply caring and steady.
