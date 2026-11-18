@@ -189,7 +189,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <h2>chat it out</h2>
       <div class="chatlog" id="chatlog" aria-live="polite"></div>
       <textarea id="chatin" style="min-height:70px" placeholder="tell me about your day…"></textarea>
-      <div class="row" id="voicebtns" hidden><button class="ghost" id="mic-chat" type="button">🎙 talk</button><button class="ghost" id="callbtn" type="button" aria-pressed="false">📞 replies aloud</button><label class="hint" style="margin:0"><input type="checkbox" id="autosend"> auto-send when I pause</label></div>
+      <div class="row" id="voicebtns" hidden><button class="ghost" id="mic-chat" type="button">🎙 talk</button><button class="ghost" id="callbtn" type="button" aria-pressed="false">📞 call mode</button><label class="hint" style="margin:0"><input type="checkbox" id="autosend"> auto-send when I pause</label></div>
       <p class="hint" id="dl-chat" style="margin:0 0 6px"></p>
       <div class="row">
         <input type="date" id="chatdate" aria-label="Chat date">
@@ -493,6 +493,8 @@ async function removeEntry(id){
 
 /* ---------- text to speech ---------- */
 const TTS = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+let TTSC = null;
+try{ claude.use('tts').then(t=>{ TTSC = t || null; }).catch(()=>{}); }catch(e){}
 let speakingKey = null, speakId = 0, voiceName = '';
 const loadingKeys = new Set();
 const gossipCache = new Map();
@@ -502,12 +504,24 @@ function cleanForSpeech(t){ return String(t).replace(/\p{Extended_Pictographic}/
 function refreshTTS(){
   document.querySelectorAll('.tts').forEach(b=>{ b.textContent = b.dataset.key===speakingKey ? '⏹ stop' : (loadingKeys.has(b.dataset.key) ? '✍ writing the tea…' : b.dataset.label); });
 }
-function stopSpeak(){ speakId++; speakingKey = null; try{ speechSynthesis.cancel(); }catch(e){} refreshTTS(); }
+function stopSpeak(){ speakId++; speakingKey = null; try{ speechSynthesis.cancel(); }catch(e){} try{ if(TTSC) TTSC.stop(); }catch(e){} refreshTTS(); }
 function speak(text,key,done){
   if(!TTS) return;
   if(speakingKey===key){ stopSpeak(); return; }
   stopSpeak();
   const clean = cleanForSpeech(text).replace(/\s*[—–]\s*/g,', ').replace(/\.{2,}/g,'.'); if(!clean) return;
+  if(TTSC){
+    const sents = clean.match(/[^.!?]+[.!?]*/g) || [clean]; const lines = []; let cur2 = '';
+    sents.forEach(x=>{ if((cur2+x).length>380 && cur2){ lines.push(cur2.trim()); cur2 = x; } else cur2 += x; }); if(cur2.trim()) lines.push(cur2.trim());
+    speakingKey = key; const id2 = ++speakId; refreshTTS();
+    const fin = ok => { if(speakId===id2){ speakingKey = null; refreshTTS(); if(ok && done) done(); } };
+    TTSC.speak(lines.slice(0,12).map(t=>({text:t.slice(0,1900), voice:'buttery'}))).then(()=>fin(true)).catch(err=>{
+      if(err && err.code==='busy'){ fin(false); return; }
+      if(TTS && speakId===id2){ TTSC = null; speakingKey = null; speak(text,key,done); return; }
+      fin(false);
+    });
+    return;
+  }
   const parts = clean.match(/[^.!?]+[.!?]*/g) || [clean];
   const chunks = []; let cur = '';
   parts.forEach(pt=>{ if((cur+pt).length>110 && cur){ chunks.push(cur); cur = pt; } else cur += pt; });
@@ -985,7 +999,7 @@ async function sendChat(){
     chat.push({role:'assistant',content:r.text});
     lastSpoken = new Set(wordsOf(r.text));
     if(/went well|good thing|bright spot|win today|good today/i.test(r.text||'')){ try{ localStorage.setItem('journal-nudge-date', todayStr()); }catch(err){} }
-    if(TTS && ($('#chatread').checked || callMode)) { speak(r.text,'chat', ()=>{ if(dict && !dict.active()){ const n = $('#dl-chat'); if(n) n.textContent = 'tap 🎙 when you want to answer.'; } }); }
+    if(TTS && ($('#chatread').checked || callMode)) { speak(r.text,'chat', callResume); }
   }catch(e){
     if(e && e.text){ chat.push({role:'assistant',content:e.text}); }
     else { chat.pop(); ta.value = text; $('#chatstatus').textContent = "couldn't reach chat right now, your message is still in the box."; }
@@ -1009,12 +1023,19 @@ function micLabels(){
   if(mc) mc.textContent = (on && dictTarget==='chatin') ? '⏹ done' : '🎙 talk';
   if(mr) mr.textContent = (on && dictTarget==='raw') ? '⏹ done' : '🎙 dictate';
 }
+function callResume(){
+  if(!dict || dict.active()) return;
+  const n = $('#dl-chat');
+  if(!callMode){ if(n) n.textContent = 'tap 🎙 when you want to answer.'; return; }
+  dictTarget = 'chatin'; $('#chatin').value = '';
+  try{ dict.start().catch(()=>{ if(n) n.textContent = 'tap 🎙 to carry on (the browser needs a tap to reopen the mic).'; }); }catch(e){ if(n) n.textContent = 'tap 🎙 to carry on.'; }
+}
 async function micOff(){
   clearTimeout(silenceT);
   try{ if(dict && dict.active()) await dict.stop(); }catch(e){}
 }
 function bumpSilence(){
-  if(dictTarget!=='chatin' || !$('#autosend') || !$('#autosend').checked) return;
+  if(dictTarget!=='chatin' || !(callMode || ($('#autosend') && $('#autosend').checked))) return;
   clearTimeout(silenceT);
   silenceT = setTimeout(()=>{ if(chatBusy || speakingKey) return; if($('#chatin').value.trim()) sendChat(); }, 2200);
 }
@@ -1043,15 +1064,15 @@ async function initDictation(){
   dict.onState(({state})=>{
     micLabels();
     if(state==='idle'){ clearTimeout(silenceT); const n = dlFor(); if(n && !/^tap|mic access|couldn|a lot/.test(n.textContent)) n.textContent = ''; }
-    else if(state==='listening'){ const n = dlFor(); if(n) n.textContent = 'listening… check the words in the box before you send.'; }
+    else if(state==='listening'){ const n = dlFor(); if(n) n.textContent = callMode && dictTarget==='chatin' ? 'on a call: talk, i answer when you pause.' : 'listening… check the words in the box before you send.'; }
   });
   $('#mic-chat').addEventListener('click',()=>micTap('chatin'));
   $('#mic-raw').addEventListener('click',()=>micTap('raw'));
   $('#callbtn').addEventListener('click',()=>{
     callMode = !callMode; $('#callbtn').setAttribute('aria-pressed',String(callMode));
-    $('#callbtn').textContent = callMode ? '📞 replies aloud on' : '📞 replies aloud';
-    if(callMode && TTS) $('#chatread').checked = true;
-    if(!callMode){ stopSpeak(); }
+    $('#callbtn').textContent = callMode ? '📞 end call' : '📞 call mode';
+    if(callMode){ if(TTS || TTSC) $('#chatread').checked = true; micTap('chatin'); }
+    else { stopSpeak(); micOff(); const n = $('#dl-chat'); if(n) n.textContent = ''; }
   });
 }
 async function saveChat(){
