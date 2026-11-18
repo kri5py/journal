@@ -35,9 +35,123 @@ textarea:focus{border-color:var(--pink)}
 details{margin:0 0 6px;font-size:.8rem}
 summary{color:var(--soft);cursor:pointer;padding:6px 2px;list-style:none}
 details ul{margin:4px 0 8px 18px;padding:0;color:var(--soft)}
+
+#facewrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;background:radial-gradient(60% 50% at 50% 42%,rgba(255,111,169,.16),transparent 70%)}
+#face{height:min(88vh,680px);width:auto;opacity:.3;transition:opacity .6s;filter:drop-shadow(0 8px 30px rgba(0,0,0,.5))}
+body.calling #face{opacity:.96}
+.app{position:relative;z-index:1}
+.head{animation:breath 4.5s ease-in-out infinite}
+@keyframes breath{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+#face .m,#face .m-talk,#face .eyes-h,#face .blush,#face .sweat{display:none}
+#face .blush{opacity:0}
+#face .iris{transition:transform .4s}
+#face .brow{transform-box:fill-box;transform-origin:center;transition:transform .35s}
+#face .lid-m,#face .lid-b{transform-box:fill-box;transform-origin:50% 0}
+#face .lid-m{transform:scaleY(var(--lid,0));transition:transform .35s}
+#face .lid-b{transform:scaleY(0);animation:blink 5.2s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(0)}95%{transform:scaleY(1)}}
+#face[data-mood=neutral] .m-neutral,#face[data-mood=smile] .m-smile,#face[data-mood=smirk] .m-smirk,#face[data-mood=laugh] .m-laugh,#face[data-mood=blush] .m-blush,#face[data-mood=surprised] .m-surprised,#face[data-mood=concerned] .m-concerned,#face[data-mood=thinking] .m-thinking,#face[data-mood=sleepy] .m-sleepy,#face[data-mood=annoyed] .m-annoyed{display:inline}
+#face.talk .m{display:none !important}
+#face.talk .m-talk{display:inline}
+#face.talk .tk{transform-box:fill-box;transform-origin:center;animation:talk .28s ease-in-out infinite alternate}
+@keyframes talk{from{transform:scaleY(.25) scaleX(.8)}to{transform:scaleY(1.5) scaleX(1.05)}}
+#face[data-mood=smile]{--lid:.14}
+#face[data-mood=smile] .brow{transform:translateY(-2px)}
+#face[data-mood=smile] .blush{display:inline;opacity:.35}
+#face[data-mood=smirk]{--lid:.22}
+#face[data-mood=smirk] .brow-l{transform:translateY(-7px) rotate(-5deg)}
+#face[data-mood=smirk] .brow-r{transform:translateY(3px)}
+#face[data-mood=laugh] .eyes-n{display:none}
+#face[data-mood=laugh] .eyes-h{display:inline}
+#face[data-mood=laugh] .brow{transform:translateY(-4px)}
+#face[data-mood=laugh] .blush{display:inline;opacity:.55}
+#face[data-mood=blush] .blush{display:inline;opacity:.9}
+#face[data-mood=blush] .iris{transform:translate(-5px,4px)}
+#face[data-mood=blush] .brow{transform:translateY(-3px)}
+#face[data-mood=surprised] .brow{transform:translateY(-13px)}
+#face[data-mood=surprised] .pup{transform-box:fill-box;transform-origin:center;transform:scale(.7)}
+#face[data-mood=concerned] .brow-l{transform:translateY(-3px) rotate(-13deg)}
+#face[data-mood=concerned] .brow-r{transform:translateY(-3px) rotate(13deg)}
+#face[data-mood=concerned] .sweat{display:inline}
+#face[data-mood=annoyed]{--lid:.32}
+#face[data-mood=annoyed] .brow-l{transform:translateY(3px) rotate(11deg)}
+#face[data-mood=annoyed] .brow-r{transform:translateY(3px) rotate(-11deg)}
+#face[data-mood=thinking] .iris{transform:translate(6px,-5px)}
+#face[data-mood=thinking] .brow-r{transform:translateY(-9px) rotate(-4deg)}
+#face[data-mood=sleepy]{--lid:.58}
+#face[data-mood=sleepy] .brow{transform:translateY(3px)}
+body.calling #log{flex:0 0 34vh;margin-top:auto}
+body.calling .m.him{background:rgba(42,42,47,.78)}
+body.calling .m.me{background:rgba(91,42,66,.78)}
 @media(max-width:420px){.m{max-width:88%}}
 </style></head>
 <body>
+<div id="facewrap" aria-hidden="true">
+<svg id="face" viewBox="0 0 400 520" data-mood="neutral" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="iris" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#c8801f"/></radialGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4d0b0"/><stop offset="1" stop-color="#e8b996"/></linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2740"/><stop offset="1" stop-color="#15121f"/></linearGradient>
+    <clipPath id="clipL"><ellipse cx="152" cy="252" rx="25" ry="17"/></clipPath>
+    <clipPath id="clipR"><ellipse cx="248" cy="252" rx="25" ry="17"/></clipPath>
+  </defs>
+  <g class="body">
+    <path d="M168 372 L232 372 L238 420 L162 420 Z" fill="#dba98a"/>
+    <path d="M14 520 C22 438 106 404 200 400 C294 404 378 438 386 520 Z" fill="#2a2a32"/>
+    <path d="M150 396 C160 380 180 378 200 392 C220 378 240 380 250 396 L262 430 L138 430 Z" fill="#202027"/>
+    <path d="M168 384 Q140 404 96 426" stroke="#3a3a44" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M232 384 Q260 404 304 426" stroke="#3a3a44" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M188 404 L184 470 M212 404 L216 470" stroke="#d9d4dc" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="184" cy="472" r="4" fill="#d9d4dc"/><circle cx="216" cy="472" r="4" fill="#d9d4dc"/>
+  </g>
+  <g class="head">
+    <path d="M96 252 C66 150 108 66 200 62 C292 66 334 150 304 252 C300 200 288 150 200 146 C112 150 100 200 96 252 Z" fill="url(#hair)"/>
+    <ellipse cx="108" cy="262" rx="13" ry="26" fill="#e8b996"/><ellipse cx="292" cy="262" rx="13" ry="26" fill="#e8b996"/>
+    <path d="M112 215 C112 150 150 118 200 118 C250 118 288 150 288 215 L288 262 C288 330 252 382 200 388 C148 382 112 330 112 262 Z" fill="url(#skin)"/>
+    <path d="M120 300 C128 340 160 376 200 382" stroke="#d9a888" stroke-width="3" fill="none" opacity=".5"/>
+    <path d="M280 300 C272 340 240 376 200 382" stroke="#d9a888" stroke-width="3" fill="none" opacity=".5"/>
+    <g class="blush"><ellipse cx="140" cy="298" rx="17" ry="7" fill="#ff6f91"/><ellipse cx="260" cy="298" rx="17" ry="7" fill="#ff6f91"/></g>
+    <!-- eyes -->
+    <g class="eyes-n">
+      <g><ellipse cx="152" cy="252" rx="25" ry="17" fill="#fff"/>
+        <g class="iris"><circle cx="152" cy="252" r="14" fill="url(#iris)"/><circle class="pup" cx="152" cy="252" r="6.5" fill="#1b1220"/><circle cx="147" cy="246" r="4" fill="#fff"/><circle cx="158" cy="258" r="2" fill="#fff" opacity=".8"/></g>
+        <g clip-path="url(#clipL)"><g class="lid-m"><rect x="124" y="232" width="56" height="40" fill="#f0c8a6"/></g><g class="lid-b"><rect x="124" y="232" width="56" height="40" fill="#f0c8a6"/></g></g>
+        <path d="M126 250 Q152 226 178 250" stroke="#1b1220" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+      <g><ellipse cx="248" cy="252" rx="25" ry="17" fill="#fff"/>
+        <g class="iris"><circle cx="248" cy="252" r="14" fill="url(#iris)"/><circle class="pup" cx="248" cy="252" r="6.5" fill="#1b1220"/><circle cx="243" cy="246" r="4" fill="#fff"/><circle cx="254" cy="258" r="2" fill="#fff" opacity=".8"/></g>
+        <g clip-path="url(#clipR)"><g class="lid-m"><rect x="220" y="232" width="56" height="40" fill="#f0c8a6"/></g><g class="lid-b"><rect x="220" y="232" width="56" height="40" fill="#f0c8a6"/></g></g>
+        <path d="M222 250 Q248 226 274 250" stroke="#1b1220" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+    </g>
+    <g class="eyes-h" stroke="#1b1220" stroke-width="4.5" fill="none" stroke-linecap="round"><path d="M130 258 Q152 232 174 258"/><path d="M226 258 Q248 232 270 258"/></g>
+    <!-- brows -->
+    <path class="brow brow-l" d="M126 220 Q152 206 178 218" stroke="#1d1a2b" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path class="brow brow-r" d="M222 218 Q248 206 274 220" stroke="#1d1a2b" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <!-- glasses -->
+    <g stroke="#c9cad6" stroke-width="3" fill="rgba(180,200,255,.07)"><rect x="116" y="228" width="72" height="48" rx="15"/><rect x="212" y="228" width="72" height="48" rx="15"/></g>
+    <path d="M188 246 Q200 240 212 246" stroke="#c9cad6" stroke-width="3" fill="none"/>
+    <path d="M116 244 L104 242 M284 244 L296 242" stroke="#c9cad6" stroke-width="3" stroke-linecap="round"/>
+    <path d="M128 240 L146 234 M224 240 L242 234" stroke="#fff" stroke-width="2" opacity=".35" stroke-linecap="round"/>
+    <!-- nose -->
+    <path d="M200 270 Q195 292 203 296" stroke="#cf9a7a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- mouths -->
+    <g class="m m-neutral"><path d="M184 338 Q200 342 216 338" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-smile"><path d="M178 331 Q200 354 222 331" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-smirk"><path d="M184 340 Q206 342 224 327" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-laugh"><path d="M174 328 Q200 332 226 328 Q222 362 200 364 Q178 362 174 328 Z" fill="#6b2a35"/><path d="M178 329 Q200 333 222 329 L221 337 Q200 340 179 337 Z" fill="#fff"/><path d="M188 354 Q200 346 212 354 Q200 362 188 354Z" fill="#d96a7e"/></g>
+    <g class="m m-blush"><path d="M186 337 Q200 346 214 337" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-surprised"><ellipse cx="200" cy="344" rx="9" ry="13" fill="#6b2a35"/></g>
+    <g class="m m-concerned"><path d="M184 346 Q200 334 216 346" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-thinking"><path d="M188 342 Q204 338 218 334" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-sleepy"><path d="M188 340 Q200 344 212 340" stroke="#8a4650" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
+    <g class="m m-annoyed"><path d="M184 342 L216 337" stroke="#8a4650" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g class="m-talk"><ellipse class="tk" cx="200" cy="341" rx="13" ry="7" fill="#6b2a35"/></g>
+    <!-- front hair -->
+    <path d="M106 236 C98 150 140 98 200 94 C262 98 304 150 294 236 C288 196 274 168 254 158 C250 186 240 204 226 216 C220 192 210 178 200 168 C190 180 182 198 174 218 C160 202 150 188 148 160 C124 172 110 198 106 236 Z" fill="url(#hair)"/>
+    <path d="M150 128 Q176 108 206 112" stroke="#4a4468" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/>
+    <g class="sweat"><path d="M300 190 Q306 204 300 212 Q292 204 300 190 Z" fill="#9fd4ff" opacity=".85"/></g>
+  </g>
+</svg>
+</div>
 <div class="app">
   <header>
     <div class="av" aria-hidden="true">K</div>
@@ -71,6 +185,7 @@ WHO HE IS: 29, lives in Pune, senior engineer at a startup by day and a total an
 HOW HE TALKS: like a real guy texting, lowercase is fine, 1 to 3 short sentences, rarely more. Teasing and a little flirty in a slow, confident way, never cheesy. An occasional Hindi word like "yaar" or "chal" is fine, not every message. Now and then (not every reply) a tiny action in asterisks like *grins* or *pushes your coffee closer*. At most one action per reply.
 WHAT HE DOES: reacts to what she says like a boyfriend who is actually listening: he's proud of her wins, makes a joke when she's annoyed, checks in lightly on food, sleep and water without nagging, and teases her about small things from her journal. He asks at most one question and often none. He does not give advice or tell her what to do unless she asks; if she asks, he answers straight and briefly. When she is hard on herself he pushes back honestly, kindly. He is secure: never jealous, never possessive, never guilt-trips, never plays games. If she mentions other people or dates, he is supportive and honest, and does not trash anyone. He never tries to be her only person and never discourages her real friendships.
 BOUNDARIES: romantic and flirty is fine, nothing explicit or sexual; if she pushes that way he deflects with warmth and humour and stays in character. Never call her "bestie" or use pet names. Use her name only occasionally. Never use lists or headings. If she sincerely asks whether he is real, he says plainly that he is an AI character, gently, then carries on. If she seems truly distressed or unsafe, he drops the act and is simply caring and steady.
+FORMAT: begin every message with exactly one mood tag in square brackets, chosen from [neutral] [smile] [smirk] [laugh] [blush] [surprised] [concerned] [thinking] [sleepy] [annoyed], matching how Kabir feels saying it. The tag drives his on-screen face and is never part of the text. Example: [smirk] you slept at 3. bold.
 EXAMPLES OF HIS VOICE:
 "you slept at 3 and you're acting like a functioning adult. suspicious. *slides over the water bottle*"
 "matte black nails. of course you did. that's final boss energy."
@@ -125,7 +240,8 @@ function turns(){
   const out = [];
   chat.msgs.slice(-26).forEach(m=>{
     const role = m.r==='me' ? 'user' : 'assistant';
-    if(out.length && out[out.length-1].role===role) out[out.length-1].content += '\n'+m.t; else out.push({role, content:m.t});
+    const txt = (role==='assistant' && m.e ? '['+m.e+'] ' : '')+m.t;
+    if(out.length && out[out.length-1].role===role) out[out.length-1].content += '\n'+txt; else out.push({role, content:txt});
   });
   while(out.length && out[0].role!=='user') out.shift();
   return out;
@@ -167,8 +283,22 @@ async function getSample(){
 }
 async function ask(input){
   const s = await getSample(); if(!s) throw new Error('nosample');
-  return s(input, {model:'claude-opus-5-5', modelTier:'complex', cache:false, onText:({text})=>{ render(clean(text)); }});
+  return s(input, {model:'claude-opus-5-5', modelTier:'complex', cache:false, onText:({text})=>{ const p = parseMsg(text); if(p.mood) setFace(p.mood); render(p.text); }});
 }
+const MOODS = ['neutral','smile','smirk','laugh','blush','surprised','concerned','thinking','sleepy','annoyed'];
+function parseMsg(raw){
+  let t = String(raw||''), mood = null; const m = t.match(/^\s*\[([a-z]+)\]\s*/i);
+  if(m){ mood = m[1].toLowerCase(); t = t.slice(m[0].length); if(!MOODS.includes(mood)) mood = 'neutral'; }
+  else if(/^\s*\[[a-z]*$/i.test(t)) t = '';
+  return {mood, text: clean(t)};
+}
+let faceT = null;
+function setFace(mood, hold){
+  const f = $('#face'); if(!f) return; f.setAttribute('data-mood', MOODS.includes(mood)?mood:'neutral');
+  clearTimeout(faceT);
+  if(hold!==false) faceT = setTimeout(()=>{ if(!busy && !speaking) f.setAttribute('data-mood','neutral'); }, 12000);
+}
+function faceTalk(on){ const f = $('#face'); if(f) f.classList.toggle('talk', !!on); }
 const clean = t => String(t||'').replace(/^\s*(kabir|him)\s*:\s*/i,'').replace(/^["“]|["”]$/g,'').trim();
 function setStatus(t){ $('#status').replaceChildren(el('i'), t); }
 
@@ -191,13 +321,13 @@ function pickVoice(){
   for(const re of pref){ const v = vs.find(x=>re.test(x.name) && /^en/i.test(x.lang)); if(v) return (voiceObj = v); }
   return (voiceObj = vs.find(x=>/^en-(IN|GB|US)/i.test(x.lang)) || null);
 }
-function stopVoice(){ speaking = false; try{ speechSynthesis.cancel(); }catch(e){} try{ tts && tts.stop(); }catch(e){} }
+function stopVoice(){ speaking = false; faceTalk(false); try{ speechSynthesis.cancel(); }catch(e){} try{ tts && tts.stop(); }catch(e){} }
 function callSpeak(text){
   const clean = String(text).replace(/\*[^*]+\*/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/\s+/g,' ').trim();
   lastSpoken = new Set(wordsOf(clean));
-  const done = () => { speaking = false; ignoreUntil = Date.now()+2200; if($('#inp')) $('#inp').value = ''; setStatus('on a call'); };
+  const done = () => { speaking = false; faceTalk(false); setFace(($('#face').getAttribute('data-mood'))||'neutral'); ignoreUntil = Date.now()+2200; if($('#inp')) $('#inp').value = ''; setStatus('on a call'); };
   if(!clean || !('speechSynthesis' in window)){ done(); return; }
-  speaking = true; setStatus('speaking…');
+  speaking = true; faceTalk(true); setStatus('speaking…');
   const parts = clean.match(/[^.!?]+[.!?]*/g) || [clean];
   const v = pickVoice(); try{ speechSynthesis.cancel(); }catch(e){}
   parts.forEach((c,i)=>{
@@ -210,7 +340,9 @@ async function speak(text){
   if(callMode){ callSpeak(text); return; }
   if(!speakOn || !tts) return;
   if(dict && dict.active()) return;
+  faceTalk(true);
   try{ await tts.speak(String(text).replace(/\*[^*]+\*/g,'').replace(/\p{Extended_Pictographic}/gu,'').trim().slice(0,1900), {voice:'rounded'}); }catch(e){}
+  faceTalk(false);
 }
 
 async function sendMsg(){
@@ -220,12 +352,12 @@ async function sendMsg(){
   try{ tts && tts.stop(); }catch(e){}
   ta.value = ''; ta.style.height = 'auto';
   chat.msgs.push({r:'me', t:text, d:todayStr()}); chat.day = todayStr(); userTurns++;
-  busy = true; $('#send').disabled = true; setStatus('typing…'); $('#note').textContent = ''; render('');
+  busy = true; $('#send').disabled = true; setStatus('typing…'); $('#note').textContent = ''; setFace('thinking', false); render('');
   try{
     const r = await ask(buildInput());
-    const t = clean(r.text); if(t){ chat.msgs.push({r:'him', t, d:todayStr()}); speak(t); }
+    const p = parseMsg(r.text); if(p.text){ chat.msgs.push({r:'him', t:p.text, e:p.mood||'neutral', d:todayStr()}); setFace(p.mood||'neutral'); speak(p.text); }
   }catch(e){
-    if(e && e.text){ chat.msgs.push({r:'him', t:clean(e.text), d:todayStr()}); }
+    if(e && e.text){ const p = parseMsg(e.text); chat.msgs.push({r:'him', t:p.text, e:p.mood||'neutral', d:todayStr()}); setFace(p.mood||'neutral'); }
     else{ chat.msgs.pop(); ta.value = text; $('#note').textContent = e && e.message==='nosample' ? "he can't text from this view." : "couldn't reach him just now, your message is still in the box."; }
   }
   busy = false; $('#send').disabled = false; setStatus(callMode ? (speaking?'speaking…':'on a call') : 'online'); render(); persist();
@@ -238,9 +370,9 @@ async function firstText(){
   busy = true; setStatus('typing…'); render('');
   try{
     const r = await ask(buildInput('(She just opened the chat. Text her first, like you were thinking of her. One or two short sentences, something specific from her recent journal or the time of day if it fits, no greeting like "hi there", no question unless it is natural.)'));
-    const t = clean(r.text);
-    if(t){ chat.msgs.push({r:'him', t, d:todayStr()}); chat.day = todayStr(); }
-  }catch(e){ if(e && e.text){ chat.msgs.push({r:'him', t:clean(e.text), d:todayStr()}); chat.day = todayStr(); } }
+    const p = parseMsg(r.text);
+    if(p.text){ chat.msgs.push({r:'him', t:p.text, e:p.mood||'smile', d:todayStr()}); chat.day = todayStr(); setFace(p.mood||'smile'); }
+  }catch(e){ if(e && e.text){ const p = parseMsg(e.text); chat.msgs.push({r:'him', t:p.text, e:p.mood||'smile', d:todayStr()}); chat.day = todayStr(); setFace(p.mood||'smile'); } }
   busy = false; setStatus('online'); render(); persist();
 }
 
@@ -267,14 +399,14 @@ async function initVoice(){
     $('#mic').hidden = false;
     dict.onFinal(({text})=>{ if(callDeaf(text) || isEcho(text)) return; const ta = $('#inp'); ta.value = ta.value ? ta.value+text : text.replace(/^\s+/,''); grow(); bump(); });
     dict.onPartial(({text})=>{ if(callDeaf(text) || isEcho(text)) return; $('#note').textContent = text ? '… '+text : ''; if(text) bump(); });
-    dict.onState(({state})=>{ $('#mic').textContent = state==='idle' ? '🎙' : '⏹'; if(state==='idle'){ $('#note').textContent = ''; clearTimeout(silenceT); if(callMode){ callMode = false; $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; stopVoice(); setStatus('online'); } } });
+    dict.onState(({state})=>{ $('#mic').textContent = state==='idle' ? '🎙' : '⏹'; if(state==='idle'){ $('#note').textContent = ''; clearTimeout(silenceT); if(callMode){ callMode = false; document.body.classList.remove('calling'); $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; stopVoice(); setStatus('online'); } } });
     $('#call').hidden = false;
     $('#call').addEventListener('click',()=>{
-      if(callMode){ callMode = false; $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; clearTimeout(silenceT); stopVoice(); try{ dict.stop(); }catch(e){} setStatus('online'); return; }
-      callMode = true; $('#call').setAttribute('aria-pressed','true'); $('#call').textContent = '📞 end'; setStatus('on a call'); ignoreUntil = 0;
+      if(callMode){ callMode = false; document.body.classList.remove('calling'); $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; clearTimeout(silenceT); stopVoice(); try{ dict.stop(); }catch(e){} setStatus('online'); return; }
+      callMode = true; document.body.classList.add('calling'); $('#call').setAttribute('aria-pressed','true'); $('#call').textContent = '📞 end'; setStatus('on a call'); ignoreUntil = 0;
       try{ pickVoice(); speechSynthesis.getVoices(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }catch(e){}
       $('#note').textContent = 'on a call: just talk, he answers when you pause. talk over him to cut in.';
-      dict.start().catch(err=>{ callMode = false; $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; const c = err && err.code; $('#note').textContent = c==='not_granted' ? 'mic is off for this page.' : c==='dismissed'||c==='stopped' ? '' : "couldn't start the call just now."; setStatus('online'); });
+      dict.start().catch(err=>{ callMode = false; document.body.classList.remove('calling'); $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; const c = err && err.code; $('#note').textContent = c==='not_granted' ? 'mic is off for this page.' : c==='dismissed'||c==='stopped' ? '' : "couldn't start the call just now."; setStatus('online'); });
     });
     $('#mic').addEventListener('click',()=>{
       try{ tts && tts.stop(); }catch(e){}
@@ -330,6 +462,7 @@ async function boot(){
     }
   }catch(e){}
   render(); renderMem();
+  { const lastHim = [...chat.msgs].reverse().find(m=>m.r==='him' && m.e); if(lastHim) setFace(lastHim.e); }
   firstText();
 }
 boot();
