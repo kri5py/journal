@@ -28,6 +28,7 @@ textarea{flex:1;resize:none;min-height:44px;max-height:140px;background:var(--ca
 textarea:focus{border-color:var(--pink)}
 .ib{height:44px;min-width:44px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:1.05rem;cursor:pointer}
 .ib.send{background:var(--hot);border-color:var(--hot);color:#1a0a12}
+#call[aria-pressed="true"]{background:#5b2a42;border-color:var(--pink);color:#ffe6f0}
 .ib:disabled{opacity:.45;cursor:default}
 .ib[aria-pressed="true"]{border-color:var(--pink);color:var(--berry)}
 .note{font-size:.72rem;color:var(--soft);min-height:1em;margin:4px 4px 0}
@@ -41,6 +42,7 @@ details ul{margin:4px 0 8px 18px;padding:0;color:var(--soft)}
   <header>
     <div class="av" aria-hidden="true">K</div>
     <div class="who"><b>Kabir</b><span id="status"><i></i>online</span></div>
+    <button class="ghost" id="call" type="button" aria-pressed="false" hidden>📞 call</button>
     <button class="ghost" id="knows" type="button">what he knows</button>
     <a class="back" id="back" href="./">journal</a>
   </header>
@@ -76,6 +78,7 @@ EXAMPLES OF HIS VOICE:
 
 /* ---------- state ---------- */
 let store = null, uid = null, journal = {entries:[], profiles:[], memory:[]};
+let callMode = false, speaking = false, ignoreUntil = 0, silenceT = null, lastSpoken = new Set(), voiceObj = null;
 let chat = {msgs:[], day:''}, mem = [], busy = false, sample = null, tts = null, dict = null, speakOn = false, userTurns = 0;
 const todayStr = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const LS = {get:(k,d)=>{ try{ const v = localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }, set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }};
@@ -167,7 +170,42 @@ async function ask(input){
 const clean = t => String(t||'').replace(/^\s*(kabir|him)\s*:\s*/i,'').replace(/^["“]|["”]$/g,'').trim();
 function setStatus(t){ $('#status').replaceChildren(el('i'), t); }
 
+const wordsOf = t => String(t||'').toLowerCase().match(/[\p{L}']+/gu) || [];
+function isEcho(text){ const w = wordsOf(text); if(w.length<3 || !lastSpoken.size) return false; return w.filter(x=>lastSpoken.has(x)).length / w.length >= 0.6; }
+function callDeaf(text){
+  if(!callMode) return false;
+  if(busy || Date.now()<ignoreUntil) return true;
+  if(speaking){
+    const w = wordsOf(text);
+    if(text && w.length>=2 && w.filter(x=>lastSpoken.has(x)).length / w.length < 0.5){ stopVoice(); ignoreUntil = 0; $('#inp').value = ''; return false; }
+    return true;
+  }
+  return false;
+}
+function pickVoice(){
+  if(voiceObj) return voiceObj;
+  let vs = []; try{ vs = speechSynthesis.getVoices(); }catch(e){}
+  const pref = [/prabhat|ravi|rishi/i, /daniel|ryan|guy|aaron|google uk english male/i];
+  for(const re of pref){ const v = vs.find(x=>re.test(x.name) && /^en/i.test(x.lang)); if(v) return (voiceObj = v); }
+  return (voiceObj = vs.find(x=>/^en-(IN|GB|US)/i.test(x.lang)) || null);
+}
+function stopVoice(){ speaking = false; try{ speechSynthesis.cancel(); }catch(e){} try{ tts && tts.stop(); }catch(e){} }
+function callSpeak(text){
+  const clean = String(text).replace(/\*[^*]+\*/g,'').replace(/\p{Extended_Pictographic}/gu,'').replace(/\s+/g,' ').trim();
+  lastSpoken = new Set(wordsOf(clean));
+  const done = () => { speaking = false; ignoreUntil = Date.now()+2200; if($('#inp')) $('#inp').value = ''; setStatus('on a call'); };
+  if(!clean || !('speechSynthesis' in window)){ done(); return; }
+  speaking = true; setStatus('speaking…');
+  const parts = clean.match(/[^.!?]+[.!?]*/g) || [clean];
+  const v = pickVoice(); try{ speechSynthesis.cancel(); }catch(e){}
+  parts.forEach((c,i)=>{
+    const u = new SpeechSynthesisUtterance(c.trim()); u.rate = 1; u.pitch = 0.85; if(v){ u.voice = v; u.lang = v.lang; }
+    if(i===parts.length-1) u.onend = u.onerror = () => { if(speaking) done(); };
+    try{ speechSynthesis.speak(u); }catch(e){ if(speaking) done(); }
+  });
+}
 async function speak(text){
+  if(callMode){ callSpeak(text); return; }
   if(!speakOn || !tts) return;
   if(dict && dict.active()) return;
   try{ await tts.speak(String(text).replace(/\*[^*]+\*/g,'').replace(/\p{Extended_Pictographic}/gu,'').trim().slice(0,1900), {voice:'rounded'}); }catch(e){}
@@ -176,7 +214,7 @@ async function speak(text){
 async function sendMsg(){
   if(busy) return;
   const ta = $('#inp'); const text = ta.value.trim(); if(!text) return;
-  try{ if(dict && dict.active()) await dict.stop(); }catch(e){}
+  try{ if(dict && dict.active() && !callMode) await dict.stop(); }catch(e){}
   try{ tts && tts.stop(); }catch(e){}
   ta.value = ''; ta.style.height = 'auto';
   chat.msgs.push({r:'me', t:text, d:todayStr()}); chat.day = todayStr(); userTurns++;
@@ -188,7 +226,7 @@ async function sendMsg(){
     if(e && e.text){ chat.msgs.push({r:'him', t:clean(e.text), d:todayStr()}); }
     else{ chat.msgs.pop(); ta.value = text; $('#note').textContent = e && e.message==='nosample' ? "he can't text from this view." : "couldn't reach him just now, your message is still in the box."; }
   }
-  busy = false; $('#send').disabled = false; setStatus('online'); render(); persist();
+  busy = false; $('#send').disabled = false; setStatus(callMode ? (speaking?'speaking…':'on a call') : 'online'); render(); persist();
   if(userTurns && userTurns % 8 === 0) updateMem();
 }
 
@@ -213,6 +251,11 @@ async function updateMem(){
   }catch(e){}
 }
 
+function bump(){
+  if(!callMode) return;
+  clearTimeout(silenceT);
+  silenceT = setTimeout(()=>{ if(callDeaf()) return; if($('#inp').value.trim()) sendMsg(); }, 2200);
+}
 /* ---------- voice ---------- */
 async function initVoice(){
   try{ tts = await claude.use('tts'); }catch(e){ tts = null; }
@@ -220,9 +263,17 @@ async function initVoice(){
   try{ dict = await claude.use('dictation'); }catch(e){ dict = null; }
   if(dict){
     $('#mic').hidden = false;
-    dict.onFinal(({text})=>{ const ta = $('#inp'); ta.value = ta.value ? ta.value+text : text.replace(/^\s+/,''); grow(); });
-    dict.onPartial(({text})=>{ $('#note').textContent = text ? '… '+text : ''; });
-    dict.onState(({state})=>{ $('#mic').textContent = state==='idle' ? '🎙' : '⏹'; if(state==='idle') $('#note').textContent = ''; });
+    dict.onFinal(({text})=>{ if(callDeaf(text) || isEcho(text)) return; const ta = $('#inp'); ta.value = ta.value ? ta.value+text : text.replace(/^\s+/,''); grow(); bump(); });
+    dict.onPartial(({text})=>{ if(callDeaf(text) || isEcho(text)) return; $('#note').textContent = text ? '… '+text : ''; if(text) bump(); });
+    dict.onState(({state})=>{ $('#mic').textContent = state==='idle' ? '🎙' : '⏹'; if(state==='idle'){ $('#note').textContent = ''; clearTimeout(silenceT); if(callMode){ callMode = false; $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; stopVoice(); setStatus('online'); } } });
+    $('#call').hidden = false;
+    $('#call').addEventListener('click',()=>{
+      if(callMode){ callMode = false; $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; clearTimeout(silenceT); stopVoice(); try{ dict.stop(); }catch(e){} setStatus('online'); return; }
+      callMode = true; $('#call').setAttribute('aria-pressed','true'); $('#call').textContent = '📞 end'; setStatus('on a call'); ignoreUntil = 0;
+      try{ pickVoice(); speechSynthesis.getVoices(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }catch(e){}
+      $('#note').textContent = 'on a call: just talk, he answers when you pause. talk over him to cut in.';
+      dict.start().catch(err=>{ callMode = false; $('#call').setAttribute('aria-pressed','false'); $('#call').textContent = '📞 call'; const c = err && err.code; $('#note').textContent = c==='not_granted' ? 'mic is off for this page.' : c==='dismissed'||c==='stopped' ? '' : "couldn't start the call just now."; setStatus('online'); });
+    });
     $('#mic').addEventListener('click',()=>{
       try{ tts && tts.stop(); }catch(e){}
       if(dict.active()){ dict.stop().catch(()=>{}); return; }
