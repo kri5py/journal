@@ -510,7 +510,7 @@ function speak(text,key,done){
   if(speakingKey===key){ stopSpeak(); return; }
   stopSpeak();
   const clean = cleanForSpeech(text).replace(/\s*[—–]\s*/g,', ').replace(/\.{2,}/g,'.'); if(!clean) return;
-  if(TTSC){
+  if(TTSC && !(callMode && dict && dict.active())){
     const sents = clean.match(/[^.!?]+[.!?]*/g) || [clean]; const lines = []; let cur2 = '';
     sents.forEach(x=>{ if((cur2+x).length>380 && cur2){ lines.push(cur2.trim()); cur2 = x; } else cur2 += x; }); if(cur2.trim()) lines.push(cur2.trim());
     speakingKey = key; const id2 = ++speakId; refreshTTS();
@@ -987,7 +987,7 @@ function renderChat(){
 async function sendChat(){
   if(chatBusy) return;
   clearTimeout(saveTimer);
-  await micOff();
+  if(!callMode) await micOff();
   const ta = $('#chatin'); const text = ta.value.trim(); if(!text) return;
   const sample = await getSample();
   if(!sample){ $('#chatstatus').textContent = 'chat is not available in this view.'; return; }
@@ -1017,6 +1017,17 @@ function isEcho(text){
   if(w.length<3 || !lastSpoken.size) return false;
   return w.filter(x=>lastSpoken.has(x)).length / w.length >= 0.6;
 }
+let ignoreUntil = 0;
+function callDeaf(text){
+  if(!(callMode && dictTarget==='chatin')) return !!speakingKey;
+  if(chatBusy || Date.now()<ignoreUntil) return true;
+  if(speakingKey==='chat'){
+    const w = wordsOf(text);
+    if(text && w.length>=2 && w.filter(x=>lastSpoken.has(x)).length / w.length < 0.5){ stopSpeak(); ignoreUntil = 0; $('#chatin').value = ''; return false; }
+    return true;
+  }
+  return false;
+}
 function micLabels(){
   const on = dict && dict.active();
   const mc = $('#mic-chat'), mr = $('#mic-raw');
@@ -1024,6 +1035,7 @@ function micLabels(){
   if(mr) mr.textContent = (on && dictTarget==='raw') ? '⏹ done' : '🎙 dictate';
 }
 function callResume(){
+  if(callMode){ ignoreUntil = Date.now()+2200; $('#chatin').value = ''; const n0 = $('#dl-chat'); if(n0 && dict && dict.active()) n0.textContent = 'on a call: talk, i answer when you pause.'; }
   if(!dict || dict.active()) return;
   const n = $('#dl-chat');
   if(!callMode){ if(n) n.textContent = 'tap 🎙 when you want to answer.'; return; }
@@ -1037,7 +1049,7 @@ async function micOff(){
 function bumpSilence(){
   if(dictTarget!=='chatin' || !(callMode || ($('#autosend') && $('#autosend').checked))) return;
   clearTimeout(silenceT);
-  silenceT = setTimeout(()=>{ if(chatBusy || speakingKey) return; if($('#chatin').value.trim()) sendChat(); }, 2200);
+  silenceT = setTimeout(()=>{ if(callDeaf()) return; if($('#chatin').value.trim()) sendChat(); }, 2200);
 }
 function micTap(target){
   if(!dict) return;
@@ -1054,9 +1066,9 @@ async function initDictation(){
   try{ dict = await claude.use('dictation'); }catch(e){ dict = null; }
   if(!dict) return;
   $('#voicebtns').hidden = false; $('#mic-raw').hidden = false;
-  dict.onPartial(({text})=>{ if(speakingKey || isEcho(text)) return; const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
+  dict.onPartial(({text})=>{ if(callDeaf(text) || isEcho(text)) return; const n = dlFor(); if(n) n.textContent = text ? '… '+text : ''; if(text) bumpSilence(); });
   dict.onFinal(({text})=>{
-    if(speakingKey || isEcho(text)) return;
+    if(callDeaf(text) || isEcho(text)) return;
     const ta = $(dictTarget==='raw' ? '#raw' : '#chatin'); if(!ta) return;
     ta.value = ta.value ? ta.value + text : text.replace(/^\s+/,'');
     const n = dlFor(); if(n) n.textContent = ''; bumpSilence();
